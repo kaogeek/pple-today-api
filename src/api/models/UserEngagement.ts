@@ -28,8 +28,11 @@ export class UserEngagement extends BaseModel {
     @Column({ name: 'ip' })
     public ip: string;
 
+    @Column({ name: 'device'})
+    public device: string;
+
     @Column({ name: 'userId' })
-    public userId: string;
+    public userId: ObjectID;
 
     @Column({ name: 'clientId' })
     public clientId: string;
@@ -48,6 +51,15 @@ export class UserEngagement extends BaseModel {
 
     @Column({ name: 'point' })
     public point: number;
+
+    @Column({ name: 'postId'})
+    public postId: ObjectID;
+
+    @Column({ name: 'voteId'})
+    public voteId: ObjectID;
+
+    @Column({ name: 'isReadId'})
+    public isReadId: ObjectID;
 
     @BeforeInsert()
     public createDetails(): any {

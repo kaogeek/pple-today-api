@@ -273,7 +273,7 @@ export class AdminPointController {
             'messages': [
                 {
                     'type': 'flex',
-                    'altText': 'ข่าวก้าวไกล ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
+                    'altText': 'ข่าวประชาชน ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
                     'contents': {
                         'type': 'bubble',
                         'size': 'mega',
@@ -316,7 +316,7 @@ export class AdminPointController {
                             'contents': [
                                 {
                                     'type': 'text',
-                                    'text': 'ก้าวไกลทูเดย์',
+                                    'text': 'ประชาชนทูเดย์',
                                     'color': '#ffffff',
                                     'weight': 'bold',
                                     'size': '34px'
@@ -649,7 +649,7 @@ export class AdminPointController {
             'messages': [
                 {
                     'type': 'flex',
-                    'altText': 'ข่าวก้าวไกล ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
+                    'altText': 'ข่าวประชาชน ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
                     'contents': {
                         'type': 'bubble',
                         'size': 'mega',
@@ -692,7 +692,7 @@ export class AdminPointController {
                             'contents': [
                                 {
                                     'type': 'text',
-                                    'text': 'ก้าวไกลทูเดย์',
+                                    'text': 'ประชาชนทูเดย์',
                                     'color': '#ffffff',
                                     'weight': 'bold',
                                     'size': '34px'

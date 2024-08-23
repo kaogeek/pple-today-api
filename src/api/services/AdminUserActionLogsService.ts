@@ -49,4 +49,8 @@ export class AdminUserActionLogsService {
     public async delete(query: any, options?: any): Promise<any> {
         return await this.actionLogRepository.deleteOne(query, options);
     }
+
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        return await this.actionLogRepository.deleteMany(query, options);
+    }
 }

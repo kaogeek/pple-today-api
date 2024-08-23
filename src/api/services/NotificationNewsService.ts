@@ -33,12 +33,17 @@ export class NotificationNewsService {
     }
 
     public async delete(query: any, options?: any): Promise<any> {
-        this.log.info('Delete a token');
+        this.log.info('Delete a notification news.');
         return await this.notificationNewsRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete a notification news.');
+        return await this.notificationNewsRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
-        this.log.info('Update a token');
+        this.log.info('Update a notification news.');
 
         return await this.notificationNewsRepository.updateOne(query, newValue);
     }

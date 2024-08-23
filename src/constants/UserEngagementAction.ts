@@ -42,3 +42,23 @@ export const ENGAGEMENT_ACTION = {
     VOTE: 'VOTE',
     BIRTHDAY: 'BIRTHDAY'
 };
+
+export const Engage_action: string[] = [
+    'CLICK',
+    'COMMENT',
+    'CREATE',
+    'EDIT',
+    'FOLLOW',
+    'LIKE',
+    'REPOST',
+    'SEARCH',
+    'TAG',
+    'UNFOLLOW',
+    'UNLIKE',
+    'VIEW',
+    'FIRST_LOGIN',
+    'VOTE',
+    'BIRTHDAY',
+    'LINE_NOTI',
+    'PPLE_NEWS'
+];

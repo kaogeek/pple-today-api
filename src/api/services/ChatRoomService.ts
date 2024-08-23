@@ -47,6 +47,10 @@ export class ChatRoomService {
         return await this.chatRoomRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        return await this.chatRoomRepository.deleteMany(query, options);
+    }
+
     // aggregate post
     public async aggregate(query: any, options?: any): Promise<any[]> {
         return await this.chatRoomRepository.aggregate(query, options).toArray();

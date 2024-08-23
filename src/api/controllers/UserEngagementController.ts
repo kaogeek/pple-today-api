@@ -12,10 +12,20 @@ import { UserEngagementService } from '../services/UserEngagementService';
 import { UserEngagementRequest } from './requests/UserEngagementRequest';
 import { UserEngagement } from '../models/UserEngagement';
 import { ResponseUtil } from '../../utils/ResponseUtil';
+import {
+    TODAY_NEWS_POINT,
+    LINE_NEWS_WEEK_OA,
+} from '../../constants/SystemConfig';
+import { Engage_action } from '../../constants/UserEngagementAction';
+import { ConfigService } from '../services/ConfigService';
 
 @JsonController('/engagement')
 export class UserEngagementController {
-    constructor(private userEngagementService: UserEngagementService) { }
+    constructor(
+        private userEngagementService: UserEngagementService,
+        private configService: ConfigService
+    ) { }
+
 
     // Create UserEngagement API
     /**
@@ -38,6 +48,33 @@ export class UserEngagementController {
      */
     @Post('/')
     public async createEngagement(@Body({ validate: true }) userEngagementBody: UserEngagementRequest, @Res() res: any, @Req() req: any): Promise<any> {
+
+        if(Engage_action.includes(userEngagementBody.action) === false) {
+            const errorResponse = ResponseUtil.getErrorResponse('Type is not correct.', undefined);
+            return res.status(400).send(errorResponse);
+        } 
+        let idx = Engage_action.indexOf(userEngagementBody.action);
+        if (idx !== -1) {
+            const errorResponse = ResponseUtil.getErrorResponse('Type is not found.', undefined);
+            return res.status(400).send(errorResponse);
+        }
+
+        let score = 2;
+
+        if (Engage_action[idx] === 'LINE_NOTI') {
+            const todayNews = await this.configService.getConfig(TODAY_NEWS_POINT);
+            if (todayNews) {
+                score = parseInt(todayNews.value, 10);
+            }
+        } else if(Engage_action[idx] === 'PPLE_NEWS'){
+            const linkAnnounceMent = await this.configService.getConfig(LINE_NEWS_WEEK_OA);
+            if (linkAnnounceMent) {
+                score = parseInt(linkAnnounceMent.value, 10);
+            }
+        } else {
+            score = score * 2;
+        }
+
         const userId =  req.headers.userid;
         const clientId = req.headers['client-id']; 
         const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
@@ -47,11 +84,16 @@ export class UserEngagementController {
         const userEngagement = new UserEngagement();
         userEngagement.clientId = clientId;
         userEngagement.ip = ipAddress; 
+        userEngagement.device = userEngagementBody.device.toLowerCase().trim();
         userEngagement.userId = userId ? new ObjectID(req.headers.userid) : '';
         userEngagement.contentId = userEngagementBody.contentId;
         userEngagement.contentType = userEngagementBody.contentType;
         userEngagement.action = userEngagementBody.action;
-        userEngagement.reference = userEngagementBody.reference; 
+        userEngagement.reference = userEngagementBody.reference;
+        userEngagement.point = score;
+        userEngagement.postId = userEngagementBody.postId === null ? null : new ObjectID(userEngagementBody.postId);
+        userEngagement.voteId = userEngagementBody.voteId === null ? null : new ObjectID(userEngagementBody.voteId);
+        userEngagement.isReadId = userEngagementBody.isReadId === null ? null : new ObjectID(userEngagementBody.isReadId);
        
         if(user){ 
             userEngagement.isFirst = false;
@@ -67,7 +109,7 @@ export class UserEngagementController {
         } else {
             const errorResponse = ResponseUtil.getErrorResponse('Create Engagement Failed', undefined);
             return res.status(400).send(errorResponse);
-        }  
+        } 
     }
 
 } 

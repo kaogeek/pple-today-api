@@ -85,8 +85,11 @@ export class MajorTrendSectionModelProcessor extends AbstractSeparateSectionProc
                         postId.push(new ObjectID(contents.post._id));
                     }
                 }
+                let postPics:any = null;
                 const majorTrend = await this.kaokaiTodayService.findOne({ position: sortV[0] });
-                const postPics = majorTrend.pics;
+                if(majorTrend !== undefined) {
+                    postPics = majorTrend.pics;
+                }
                 if (majorTrend === undefined) {
                     const result: SectionModel = new SectionModel();
                     result.title = (this.config === undefined || this.config.title === undefined) ? 'เกาะกระแส' : 'เกาะกระแส';

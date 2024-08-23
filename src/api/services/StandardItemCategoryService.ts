@@ -42,6 +42,10 @@ export class StandardItemCategoryService {
         return await this.standardItemCategoryRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        return await this.standardItemCategoryRepository.deleteMany(query, options);
+    }
+
     // find user
     public aggregate(query: any, options?: any): Promise<any[]> {
         return this.standardItemCategoryRepository.aggregate(query, options).toArray();

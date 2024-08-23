@@ -108,11 +108,14 @@ export class KaoKaiHashTagModelProcessor extends AbstractSeparateSectionProcesso
                         postId.push(new ObjectID(contents.post._id));
                     }
                 }
+                let postPics:any = null;
                 const hashTagProcessor = await this.kaokaiTodayService.findOne({ position: sortV[0] });
-                const postPics = hashTagProcessor.pics;
+                if (hashTagProcessor !== undefined) {
+                    postPics = hashTagProcessor.pics;
+                }
                 if (hashTagProcessor === undefined) {
                     const result: SectionModel = new SectionModel();
-                    result.title = (this.config === undefined || this.config.title === undefined) ? 'สภาก้าวไกล' : 'สภาก้าวไกล';
+                    result.title = (this.config === undefined || this.config.title === undefined) ? 'สภาประชาชน' : 'สภาประชาชน';
                     result.subtitle = '';
                     result.description = '';
                     result.iconUrl = '';
@@ -2278,7 +2281,7 @@ export class KaoKaiHashTagModelProcessor extends AbstractSeparateSectionProcesso
 
                 const lastestDate = null;
                 const result: SectionModel = new SectionModel();
-                result.title = (this.config === undefined || this.config.title === undefined) ? 'สภาก้าวไกล' : 'สภาก้าวไกล';
+                result.title = (this.config === undefined || this.config.title === undefined) ? 'สภาประชาชน' : 'สภาประชาชน';
                 result.subtitle = '';
                 result.description = '';
                 result.iconUrl = '';

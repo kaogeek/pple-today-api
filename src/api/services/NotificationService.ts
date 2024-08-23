@@ -88,7 +88,7 @@ export class NotificationService {
     }
     public async testMultiDevice(token: any): Promise<any> {
         const registrationTokens = token;
-        const title = 'Hello World ชาวก้าวไกล!';
+        const title = 'Hello World ชาวประชาชน!';
         const image = 'https://scontent.fbkk2-3.fna.fbcdn.net/v/t39.30808-6/355437853_834984011524286_2620245563691529882_n.jpg?_nc_cat=111&cb=99be929b-59f725be&ccb=1-7&_nc_sid=730e14&_nc_eui2=AeHulsSGw1aykmm2mWaVr7ui84g9AOew56vziD0A57Dnq_ebcZYEz2lyh_ZTBRdkA_Uhh-I0e2lyIMNgTYvbZ6a8&_nc_ohc=zOqkiqXob2wAX_HQUSs&_nc_ht=scontent.fbkk2-3.fna&oh=00_AfBTww5j0wwsoi2AMVVlLnrJ1SG3x1A-JlI97O2YaqKS_g&oe=649AD4E3';
         const payload =
         {
@@ -104,7 +104,7 @@ export class NotificationService {
         }
     }
     public async multiPushNotificationMessage(data: any, tokenId: any, date: any, filterNews: boolean): Promise<any> {
-        const title = 'ก้าวไกลหน้าหนึ่ง';
+        const title = 'ประชาชนหน้าหนึ่ง';
         let body = undefined;
         let image = undefined;
         if (String(filterNews) === 'true') {
@@ -118,11 +118,11 @@ export class NotificationService {
                 }
             }
             if (body === undefined) {
-                body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ก้าวไกลหน้าหนึ่ง';
+                body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
                 image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
             }
         } else {
-            body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ก้าวไกลหน้าหนึ่ง';
+            body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
             image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
         }
         if (body.length > 60) {
@@ -157,7 +157,7 @@ export class NotificationService {
     }
 /*
     public async multiPushNotificationMessageTest(data: any, tokenId: any, date: any, filterNews: boolean): Promise<any> {
-        const title = 'ก้าวไกลหน้าหนึ่ง';
+        const title = 'ประชาชนหน้าหนึ่ง';
         let body = undefined;
         let image = undefined;
         if (String(filterNews) === 'true') {
@@ -171,11 +171,11 @@ export class NotificationService {
                 }
             }
             if (body === undefined) {
-                body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ก้าวไกลหน้าหนึ่ง';
+                body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
                 image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
             }
         } else {
-            body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ก้าวไกลหน้าหนึ่ง';
+            body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
             image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
         }
         if (body.length > 60) {
@@ -212,7 +212,7 @@ export class NotificationService {
     }
 */
     public async manualMultiPushNotificationMessage(tokenId: any): Promise<any> {
-        const title = 'พบกับก้าวไกลหน้าหนึ่งได้แล้ววันนี้';
+        const title = 'พบกับประชาชนหน้าหนึ่งได้แล้ววันนี้';
         const body = 'อัพเดทแอปเป็นเวอร์ชั่นใหม่เลย';
         const image = 'https://today-api.moveforwardparty.org/api/file/65fb943fa521ac67854f81e8/image';
         const token = tokenId;
@@ -240,7 +240,7 @@ export class NotificationService {
     }
 
     public async testManualMultiPushNotificationMessage(): Promise<any> {
-        const title = 'พบกับก้าวไกลหน้าหนึ่งได้แล้ววันนี้';
+        const title = 'พบกับประชาชนหน้าหนึ่งได้แล้ววันนี้';
         const body = 'อัพเดทแอปเป็นเวอร์ชั่นใหม่เลย';
         const image = 'https://today-api.moveforwardparty.org/api/file/65fb943fa521ac67854f81e8/image';
         const notificationType = '';
@@ -265,8 +265,8 @@ export class NotificationService {
     }
 
     public async pushNotificationMessage(data: any, tokenId: any, date: any): Promise<any> {
-        const title = 'ก้าวไกลหน้าหนึ่ง';
-        let body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ก้าวไกลหน้าหนึ่ง';
+        const title = 'ประชาชนหน้าหนึ่ง';
+        let body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
         if (body.length > 60) {
             body = body.substring(0, 60) + '...';
         }

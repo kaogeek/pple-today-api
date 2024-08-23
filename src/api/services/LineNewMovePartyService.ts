@@ -40,12 +40,17 @@ export class LineNewMovePartyService {
     }
 
     public async delete(query: any, options?: any): Promise<any> {
-        this.log.info('Delete a snapshots');
+        this.log.info('Delete a Line New.');
         return await this.lineNewMovePartyRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete a Line New.');
+        return await this.lineNewMovePartyRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
-        this.log.info('Update a snapshots');
+        this.log.info('Update a Line New.');
 
         return await this.lineNewMovePartyRepository.updateOne(query, newValue);
     }

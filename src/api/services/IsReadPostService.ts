@@ -32,12 +32,17 @@ export class IsReadPostService {
     }
 
     public async delete(query: any, options?: any): Promise<any> {
-        this.log.info('Delete a token');
+        this.log.info('Delete a is read.');
         return await this.isReadPostRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete a is read.');
+        return await this.isReadPostRepository.deleteMany(query, options);
+    }
+
     public async updateToken(query: any, newValue: any): Promise<any> {
-        this.log.info('Update a token');
+        this.log.info('Update a is read.');
 
         return await this.isReadPostRepository.updateOne(query, newValue);
     }

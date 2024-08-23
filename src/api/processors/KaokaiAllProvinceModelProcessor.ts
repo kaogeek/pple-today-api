@@ -102,11 +102,14 @@ export class KaokaiAllProvinceModelProcessor extends AbstractSeparateSectionProc
                         postId.push(new ObjectID(contents.post._id));
                     }
                 }
+                let postPics:any = null
                 const provincePage = await this.kaokaiTodayService.findOne({ position: sortV[0] });
-                const postPics = provincePage.pics;
+                if (provincePage !== undefined) {
+                    postPics = provincePage.pics;
+                }
                 if (provincePage === undefined) {
                     const result: SectionModel = new SectionModel();
-                    result.title = (this.config === undefined || this.config.title === undefined) ? 'ก้าวไกลทุกจังหวัด' : 'ก้าวไกลทุกจังหวัด';
+                    result.title = (this.config === undefined || this.config.title === undefined) ? 'ประชาชนทุกจังหวัด' : 'ประชาชนทุกจังหวัด';
                     result.subtitle = '';
                     result.description = '';
                     result.iconUrl = '';

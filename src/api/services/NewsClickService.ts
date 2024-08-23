@@ -37,6 +37,11 @@ export class NewsClickService {
         return await this.newsClickRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete a newsClicks');
+        return await this.newsClickRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
         this.log.info('Update a newsClicks');
 

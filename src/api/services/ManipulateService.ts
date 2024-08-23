@@ -37,6 +37,11 @@ export class ManipulateService {
         return await this.manipulateRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete many a manipulate');
+        return await this.manipulateRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
         this.log.info('Update a manipulate');
 

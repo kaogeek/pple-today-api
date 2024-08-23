@@ -41,6 +41,10 @@ export class FacebookWebhookLogsService {
         return await this.fbLogRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        return await this.fbLogRepository.deleteMany(query, options);
+    }
+
     // search
     public searchScores(startDateTime?:any,endDateTime?:any): Promise<any> {
         const limit = undefined;

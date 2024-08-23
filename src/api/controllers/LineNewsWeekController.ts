@@ -53,6 +53,8 @@ export class PointMfpController {
             lineNewsWeek.todayDate = today;
             lineNewsWeek.newsWeek = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
             lineNewsWeek.active = false;
+            lineNewsWeek.sending = 0;
+            lineNewsWeek.sended = 0;
             const created = await this.lineNewsWeekService.create(lineNewsWeek);
             if (created) {
                 const successResponse = ResponseUtil.getSuccessResponse('Create Line News Week is success.', created);
@@ -66,48 +68,25 @@ export class PointMfpController {
                 for (const content of lineOa) {
                     if (content.active === false && today.getTime() >= content.newsWeek.getTime()) {
                         const lineOaStack = await this.lineNewMovePartyService.aggregate([]);
-                        if (lineOaStack.length > 0) {
-                            const lineMessage = await this.lineOaNoti(lineOaStack, today, twoWeeksAgo, content);
-                            if (lineMessage === 'Line Flex message is success.') {
-                                // Line Flex message is success.
-                                const successResponse = ResponseUtil.getSuccessResponse('Line Flex message is success.', undefined);
-                                return res.status(200).send(successResponse);
-                            }
-                            if (lineMessage === 'Not found the contents.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Not found the contents.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
+                        const lineMessage = await this.lineOaNoti(lineOaStack, today, twoWeeksAgo, content);
+                        if (lineMessage === 'Line Flex message is success.') {
+                            // Line Flex message is success.
+                            const successResponse = ResponseUtil.getSuccessResponse('Line Flex message is success.', undefined);
+                            return res.status(200).send(successResponse);
+                        }
+                        if (lineMessage === 'Not found the contents.') {
+                            const errorResponse = ResponseUtil.getErrorResponse('Not found the contents.', undefined);
+                            return res.status(400).send(errorResponse);
+                        }
 
-                            if (lineMessage === 'Line Flex message undefined.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Line Flex message undefined.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
+                        if (lineMessage === 'Line Flex message undefined.') {
+                            const errorResponse = ResponseUtil.getErrorResponse('Line Flex message undefined.', undefined);
+                            return res.status(400).send(errorResponse);
+                        }
 
-                            if (lineMessage === 'Line Flex message is empty array.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Line Flex message is empty array.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
-                        } else {
-                            const lineMessage = await this.lineOaNoti(lineOaStack, today, twoWeeksAgo, content);
-                            if (lineMessage === 'Line Flex message is success.') {
-                                // Line Flex message is success.
-                                const successResponse = ResponseUtil.getSuccessResponse('Line Flex message is success.', undefined);
-                                return res.status(200).send(successResponse);
-                            }
-                            if (lineMessage === 'Not found the contents.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Not found the contents.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
-
-                            if (lineMessage === 'Line Flex message undefined.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Line Flex message undefined.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
-
-                            if (lineMessage === 'Line Flex message is empty array.') {
-                                const errorResponse = ResponseUtil.getErrorResponse('Line Flex message is empty array.', undefined);
-                                return res.status(400).send(errorResponse);
-                            }
+                        if (lineMessage === 'Line Flex message is empty array.') {
+                            const errorResponse = ResponseUtil.getErrorResponse('Line Flex message is empty array.', undefined);
+                            return res.status(400).send(errorResponse);
                         }
                     } else {
                         const successResponse = ResponseUtil.getSuccessResponse(`Today: ${today}, EndRange: ${content.newsWeek}`, undefined);
@@ -124,7 +103,7 @@ export class PointMfpController {
     private async lineOaNoti(data: any, today: any, rangeEnd: any, lineOa: any): Promise<any> {
         const objStackIds: any = [];
         for (const line of data) {
-            line.objIds.map((ids) => objStackIds.push(new ObjectID(ids)));
+            line.objIds.map((ids:any) => objStackIds.push(new ObjectID(ids)));
         }
 
         const kaokaiSnapshot = await this.kaokaiTodaySnapShotService.aggregate(
@@ -142,7 +121,7 @@ export class PointMfpController {
                     }
                 },
                 {
-                    $limit: 4
+                    $limit: 50
                 }
             ]
         );
@@ -150,7 +129,7 @@ export class PointMfpController {
             'messages': [
                 {
                     'type': 'flex',
-                    'altText': 'ข่าวก้าวไกล ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
+                    'altText': 'ข่าวประชาชน ที่น่าสนใจในช่วง 2 สัปดาห์ที่ผ่านมา',
                     'contents': {
                         'type': 'bubble',
                         'size': 'mega',
@@ -282,7 +261,7 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
-                    content['messages'][0].contents.body.contents[2].contents[1].contents.push(
+                    content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
                             'layout': 'horizontal',
@@ -360,7 +339,7 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
-                    content['messages'][0].contents.body.contents[2].contents[1].contents.push(
+                    content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
                             'layout': 'horizontal',
@@ -439,7 +418,7 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
-                    content['messages'][0].contents.body.contents[2].contents[1].contents.push(
+                    content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
                             'layout': 'horizontal',
@@ -504,7 +483,6 @@ export class PointMfpController {
             const lineNewMoveParty = new LineNewMoveParty();
             lineNewMoveParty.objIds = stackIds;
             const tokenLine = process.env.LINE_AUTHORIZATION;
-
             const create = await this.lineNewMovePartyService.create(lineNewMoveParty);
             // api.line.me/v2/bot/message/push
             if (create) {
@@ -514,7 +492,6 @@ export class PointMfpController {
                         Authorization: 'Bearer ' + tokenLine
                     }
                 });
-                
                 if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
                     const chunks: number[][] = checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
                     chunks.forEach((user,i) => {
@@ -524,6 +501,7 @@ export class PointMfpController {
                             messages: JSON.stringify(content['messages']),
                             token: tokenLine
                         };
+                        
                         worker.postMessage(messagePayload);
                         worker.on('message', (message:string) => {
                             if(message === 'done') {
@@ -532,24 +510,27 @@ export class PointMfpController {
                             }
                         });
                     });
-                    const pageLike = await this.configService.getConfig(LINE_NEWS_WEEK_OA);
-                    let pageLikePoint = DEFAULT_LINE_NEWS_WEEK_OA;
-                    if (pageLike) {
-                        pageLikePoint = parseInt(pageLike.value, 10);
-                    }
-                    const query = { _id: ObjectID(lineOa._id) };
-                    const newValues = { $set: { active: true } };
-                    const update = await this.lineNewsWeekService.update(query, newValues);
-                    if (update) {
-                        const twoWeeksAgo = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
-                        const lineNewsWeek: LineNewsWeek = new LineNewsWeek();
-                        lineNewsWeek.todayDate = today;
-                        lineNewsWeek.newsWeek = twoWeeksAgo;
-                        lineNewsWeek.active = false;
-                        const created = await this.lineNewsWeekService.create(lineNewsWeek);
-                        if (created) {
-                            return 'Line Flex message is success.';
-                        }
+                }
+                const pageLike = await this.configService.getConfig(LINE_NEWS_WEEK_OA);
+                let pageLikePoint = DEFAULT_LINE_NEWS_WEEK_OA;
+                if (pageLike) {
+                    pageLikePoint = parseInt(pageLike.value, 10);
+                }
+                const query = { _id: new ObjectID(lineOa._id) };
+                const count = parseInt(lineUsers.data.userIds.length, 10);
+                const newValues = { $set: { active: true, sending: count, sended: count} };
+                const update = await this.lineNewsWeekService.update(query, newValues);
+                if (update) {
+                    const twoWeeksAgo = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
+                    const lineNewsWeek: LineNewsWeek = new LineNewsWeek();
+                    lineNewsWeek.todayDate = today;
+                    lineNewsWeek.newsWeek = twoWeeksAgo;
+                    lineNewsWeek.active = false;
+                    lineNewsWeek.sending = 0;
+                    lineNewsWeek.sended = 0;
+                    const created = await this.lineNewsWeekService.create(lineNewsWeek);
+                    if (created) {
+                        return 'Line Flex message is success.';
                     }
                 }
                 return 'Line Flex message undefined.';

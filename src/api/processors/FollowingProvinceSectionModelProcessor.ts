@@ -213,7 +213,7 @@ export class FollowingProvinceSectionModelProcessor extends AbstractSeparateSect
                 const postAggregate = await this.postsService.aggregate(postStmt);
                 const lastestDate = null;
                 const result: SectionModel = new SectionModel();
-                result.title = (this.config === undefined || this.config.title === undefined) ? 'ก้าวไกล' + userProvince[0].province : this.config.title;
+                result.title = (this.config === undefined || this.config.title === undefined) ? 'ประชาชน' + userProvince[0].province : this.config.title;
                 result.subtitle = '';
                 result.description = '';
                 result.iconUrl = '';

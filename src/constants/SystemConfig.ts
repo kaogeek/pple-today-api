@@ -5,7 +5,7 @@
  * Author:  shiorin <junsuda.s@absolute.co.th>, chalucks <chaluck.s@absolute.co.th>
  */
 
-export const PLATFORM_NAME_TH = 'ก้าวไกลทูเดย์';
+export const PLATFORM_NAME_TH = 'ประชาชนทูเดย์';
 export const PLATFORM_NAME_ENG = 'MFP Today';
 
 export const ASSET_CONFIG_NAME = {
@@ -80,7 +80,7 @@ export const DEFAULT_SWITCH_CASE_SEND_NOTI = true;
 export const SEND_EMAIL_TO_USER = 'send.email.to.user';
 
 export const KAOKAITODAY_ANNOUNCEMENT = 'kaokaiToday.announcement';
-export const DEFAULT_KAOKAITODAY_ANNOUNCEMENT = 'สวัสดีก้าวไกลทูเดย์';
+export const DEFAULT_KAOKAITODAY_ANNOUNCEMENT = 'สวัสดีประชาชนทูเดย์';
 
 export const KAOKAITODAY_LINK_ANNOUNCEMENT='kaokaiToday.link.announcement';
 export const DEFAULT_KAOKAITODAY_LINK_ANNOUNCEMENT= 'home';
@@ -120,7 +120,7 @@ export const CLOSET_VOTE = 'closet.vote';
 export const DEFAULT_CLOSET_SUPPORT = 5;
 export const CLOSET_SUPPORT = 'closet.support';
 
-export const DEFAULT_MFP_HASHTAG = 'ก้าวไกล';
+export const DEFAULT_MFP_HASHTAG = 'ประชาชน';
 export const MFPHASHTAG = 'mfp.hashtag';
 
 export const DEFAULT_TRIGGER_VOTE = true;

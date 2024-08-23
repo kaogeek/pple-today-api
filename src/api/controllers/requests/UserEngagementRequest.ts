@@ -12,10 +12,15 @@ export class UserEngagementRequest {
     public contentId: string;
     public contentType: string;
     public ip: string;
+    public device: string;
     public userId: string;
     public clientId: string;
     public isFirst: boolean;
     public action: string;  
     public reference: string;  
     public likeAsPage: number;  
+    public point: number;
+    public postId: string;
+    public voteId: string;
+    public isReadId: string;
 }

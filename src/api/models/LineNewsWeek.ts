@@ -18,6 +18,12 @@ export class LineNewsWeek extends BaseModel {
     @Column({ name: 'newsWeek'})
     public newsWeek: Date;
 
+    @Column({ name: 'sending'})
+    public sending: number;
+
+    @Column({ name: 'sended'})
+    public sended: number;
+
     @Column({ name: 'active'})
     public active: boolean;
     

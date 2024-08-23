@@ -44,6 +44,11 @@ export class LineNewsWeekService {
         return await this.lineNewsWeekRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete a Line News Week');
+        return await this.lineNewsWeekRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
         this.log.info('Update a Line News Week');
 

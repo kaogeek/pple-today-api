@@ -319,8 +319,7 @@ export class MainPageController {
         if (majorTrend.position !== undefined && majorTrend.position !== null) {
             checkPosition2 = majorTrend.position;
         }
-        // ก้าวไกลสภา #hashTag
-        // ก้าวไกลทุกจังหวัด
+
         const kaokaiProvinceProcessor: KaokaiAllProvinceModelProcessor = new KaokaiAllProvinceModelProcessor(this.postsService, this.s3Service, this.userLikeService, this.kaokaiTodayService, this.hashTagService, this.pageService);
         kaokaiProvinceProcessor.setData({
             userId,
@@ -1406,8 +1405,7 @@ export class MainPageController {
         if (majorTrend.position !== undefined && majorTrend.position !== null) {
             checkPosition2 = majorTrend.position;
         }
-        // ก้าวไกลสภา #hashTag
-        // ก้าวไกลทุกจังหวัด
+
         const kaokaiProvinceProcessor: KaokaiAllProvinceModelProcessor = new KaokaiAllProvinceModelProcessor(this.postsService, this.s3Service, this.userLikeService, this.kaokaiTodayService, this.hashTagService, this.pageService);
         kaokaiProvinceProcessor.setData({
             userId,
@@ -3132,7 +3130,7 @@ export class MainPageController {
                 for (const userEmail of emailStack) {
                     user = await this.userService.findOne({ email: userEmail.toString() });
                     if (user.subscribeEmail === true) {
-                        await this.sendEmail(user, user.email, snapshot.data, 'ก้าวไกลวันนี้', endDateTimeToday);
+                        await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนวันนี้', endDateTimeToday);
                     } else {
                         continue;
                     }
@@ -3142,7 +3140,7 @@ export class MainPageController {
                 if (snapshot) {
                     for (const user of users) {
                         if (user.subscribeEmail === true) {
-                            await this.sendEmail(user, user.email, snapshot.data, 'ก้าวไกลหน้าหนึ่ง', endDateTimeToday);
+                            await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนหน้าหนึ่ง', endDateTimeToday);
                         } else {
                             continue;
                         }
@@ -3570,7 +3568,7 @@ export class MainPageController {
                <div style="display: grid;margin: 30px 40px;
                gap: 5px;">
                    <span
-                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                    <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                </div>
             
@@ -3710,7 +3708,7 @@ export class MainPageController {
                         </a>
                    </div>
                </div>
-               <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+               <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                     <div style='background: white;width:40%;margin: 0 auto'>
                         <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -3759,7 +3757,7 @@ export class MainPageController {
                <div style="display: grid;margin: 30px 40px;
                gap: 5px;">
                    <span
-                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                    <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                </div>
                <div style="width: 100%;background: white;border-bottom: 1px solid gray;">
@@ -3858,7 +3856,7 @@ export class MainPageController {
                         </a>
                    </div>
                </div>
-               <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+               <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                     <div style='background: white;width:40%;margin: 0 auto'>
                         <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -3905,7 +3903,7 @@ export class MainPageController {
                     <div style="display: grid;margin: 30px 40px;
                     gap: 5px;">
                         <span
-                            style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                            style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                         <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                     </div>
                     <div style="width: 100%;background: white;border-bottom: 1px solid gray;">
@@ -3966,7 +3964,7 @@ export class MainPageController {
                                 </div>
                         </div>
                     </div>
-                    <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                    <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                     <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                             <div style='background: white;width:40%;margin: 0 auto'>
                                 <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4014,7 +4012,7 @@ export class MainPageController {
                <div style="display: grid;margin: 30px 40px;
                gap: 5px;">
                    <span
-                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                       style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                    <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                </div>
             
@@ -4117,7 +4115,7 @@ export class MainPageController {
                             </div>
                     </div>
                 </div>
-                <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                 <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                     <div style='background: white;width:40%;margin: 0 auto'>
                         <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4163,7 +4161,7 @@ export class MainPageController {
                    <div style="display: grid;margin: 30px 40px;
                    gap: 5px;">
                        <span
-                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                        <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                    </div>
                 
@@ -4294,7 +4292,7 @@ export class MainPageController {
                         </a>
                         </div>
                    </div>
-                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                    <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                         <div style='background: white;width:40%;margin: 0 auto'>
                             <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4342,7 +4340,7 @@ export class MainPageController {
                    <div style="display: grid;margin: 30px 40px;
                    gap: 5px;">
                        <span
-                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                        <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                    </div>
                 
@@ -4461,7 +4459,7 @@ export class MainPageController {
                             </a>
                         </div>
                    </div>
-                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                    <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                         <div style='background: white;width:40%;margin: 0 auto'>
                             <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4510,7 +4508,7 @@ export class MainPageController {
                    <div style="display: grid;margin: 30px 40px;
                    gap: 5px;">
                        <span
-                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                        <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                    </div>    
                    <div style="width: 100%;background: white;border-bottom: 1px solid gray;">
@@ -4585,7 +4583,7 @@ export class MainPageController {
                             </a>
                         </div>
                    </div>
-                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                    <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                         <div style='background: white;width:40%;margin: 0 auto'>
                             <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4633,7 +4631,7 @@ export class MainPageController {
                    <div style="display: grid;margin: 30px 40px;
                    gap: 5px;">
                        <span
-                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ก้าวไกลหน้าหนึ่ง</span>
+                           style="font-size: 26pt;padding-bottom: 10px;background: white;color: #ee7623;text-align: center;">ประชาชนหน้าหนึ่ง</span>
                        <span style="background: white;color: #ee7623;text-align: center;">ฉบับวันที่ <span style = 'background: white;color:black;'>${thaiDate}</span></span>
                    </div>    
                    <div style="width: 100%;background: white;border-bottom: 1px solid gray;">
@@ -4720,7 +4718,7 @@ export class MainPageController {
                         </a>
                         </div>
                    </div>
-                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคก้าวไกลได้ที่นี่</a>
+                   <a href=${homePage} style="display:block;text-align:center;width:100%;margin-top:15px;background:white;margin-bottom:20px;border-radius:50px;padding:10px 0;border:1px solid #ee7623; background:white;color:#ee7623;text-decoration: none;">ติดตามพวกเราพรรคประชาชนได้ที่นี่</a>
                    <div align='center' style="width: 100%;background: white;padding-top: 15px;margin-bottom: 10px;">
                         <div style='background: white;width:40%;margin: 0 auto'>
                             <a href=${linkPlayStore} style="background: white;margin: 0 auto">
@@ -4772,7 +4770,7 @@ export class MainPageController {
         // data: data.data,
         imageFilter = await this.parseKaokaiTodayPictureRange(data);
         const payload = {
-            title: 'ก้าวไกลทูเดย์',
+            title: 'ประชาชนทูเดย์',
             image: imageFilter,
             timeStamp: data.endDateTime,
             date: 'ฉบับวันที่ ' + '' + timeStamp,

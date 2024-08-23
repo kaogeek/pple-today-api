@@ -60,6 +60,11 @@ export class StandardItemService {
         return await this.standardItemRepository.deleteOne(query, options);
     }
 
+    // delete standardItem
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        return await this.standardItemRepository.deleteMany(query, options);
+    }
+
     // find standardItem
     public aggregate(query: any, options?: any): Promise<any> {
         return this.standardItemRepository.aggregate(query, options).toArray();

@@ -5,7 +5,7 @@
 //     request('http://localhost:9000/api')
 //       .get('/')
 //       .expect(200)
-//       .end(function (err:any, res:any): {
+//       .end(function (err:any, res:any) :any {
 //         if (err) {
 //             return done(err);
 //         }

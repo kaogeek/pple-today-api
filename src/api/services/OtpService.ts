@@ -19,7 +19,7 @@ export class OtpService {
 
     // create Device token and find the user who is login !!!!!
     public async createOtp(data: any): Promise<any> {
-        this.log.info('Send OTP.');
+        this.log.info('Create otp.');
         return await this.otpRepository.save(data);
     }
 
@@ -32,7 +32,7 @@ export class OtpService {
     }
 
     public async delete(query: any, options?: any): Promise<any> {
-        this.log.info('Delete a token');
+        this.log.info('Delete a otp');
         return await this.otpRepository.deleteOne(query, options);
     }
     // delete Needs
@@ -40,7 +40,7 @@ export class OtpService {
         return await this.otpRepository.deleteMany(query, options);
     }
     public async updateToken(query: any, newValue: any): Promise<any> {
-        this.log.info('Update a token');
+        this.log.info('Update a otp');
 
         return await this.otpRepository.updateOne(query, newValue);
     }

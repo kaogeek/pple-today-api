@@ -61,11 +61,14 @@ export class PageRoundRobinProcessor extends AbstractSeparateSectionProcessor {
                         }
                     }
                 }
+                let postPics = null;
                 const roundRobin = await this.kaokaiTodayService.findOne({ position: sortV[0] });
-                const postPics = roundRobin.pics;
+                if (roundRobin !== undefined) {
+                    postPics = roundRobin.pics;
+                }
                 if (roundRobin === undefined) {
                     const result: SectionModel = new SectionModel();
-                    result.title = (this.config === undefined || this.config.title === undefined) ? 'ก้าวไกลวันนี้' : 'ก้าวไกลวันนี้';
+                    result.title = (this.config === undefined || this.config.title === undefined) ? 'ประชาชนวันนี้' : 'ประชาชนวันนี้';
                     result.subtitle = '';
                     result.description = '';
                     result.iconUrl = '';

@@ -44,6 +44,11 @@ export class KaokaiTodaySnapShotService {
         return await this.kaokaiTodaySnapShotRepository.deleteOne(query, options);
     }
 
+    public async deleteMany(query: any, options?: any): Promise<any> {
+        this.log.info('Delete many a snapshots');
+        return await this.kaokaiTodaySnapShotRepository.deleteMany(query, options);
+    }
+
     public async update(query: any, newValue: any): Promise<any> {
         this.log.info('Update a snapshots');
 
