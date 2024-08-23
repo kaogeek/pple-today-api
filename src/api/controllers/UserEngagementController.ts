@@ -26,7 +26,6 @@ export class UserEngagementController {
         private configService: ConfigService
     ) { }
 
-
     // Create UserEngagement API
     /**
      * @api {post} /api/engagement Create UserEngagement API
@@ -53,7 +52,7 @@ export class UserEngagementController {
             const errorResponse = ResponseUtil.getErrorResponse('Type is not correct.', undefined);
             return res.status(400).send(errorResponse);
         } 
-        let idx = Engage_action.indexOf(userEngagementBody.action);
+        const idx:number = Engage_action.indexOf(userEngagementBody.action);
         if (idx !== -1) {
             const errorResponse = ResponseUtil.getErrorResponse('Type is not found.', undefined);
             return res.status(400).send(errorResponse);

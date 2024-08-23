@@ -14,6 +14,9 @@ import { KaokaiTodaySnapShotService } from '../services/KaokaiTodaySnapShot';
 import { LineNewMoveParty } from '../models/LineNewMoveParty';
 import axios from 'axios';
 import { Worker} from 'worker_threads';
+import { WorkerThread } from '../models/WokerThreadModel';
+import { WorkerThreadService } from '../services/WokerThreadService';
+import { type } from '../../constants/WorkerThread';
 // startVoteDatetime
 @JsonController('/line')
 export class PointMfpController {
@@ -21,7 +24,8 @@ export class PointMfpController {
         private lineNewsWeekService: LineNewsWeekService,
         private configService: ConfigService,
         private lineNewMovePartyService: LineNewMovePartyService,
-        private kaokaiTodaySnapShotService: KaokaiTodaySnapShotService
+        private kaokaiTodaySnapShotService: KaokaiTodaySnapShotService,
+        private workerThreadService: WorkerThreadService
     ) { }
 
     @Post('/oa')
@@ -53,8 +57,6 @@ export class PointMfpController {
             lineNewsWeek.todayDate = today;
             lineNewsWeek.newsWeek = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
             lineNewsWeek.active = false;
-            lineNewsWeek.sending = 0;
-            lineNewsWeek.sended = 0;
             const created = await this.lineNewsWeekService.create(lineNewsWeek);
             if (created) {
                 const successResponse = ResponseUtil.getSuccessResponse('Create Line News Week is success.', created);
@@ -492,8 +494,9 @@ export class PointMfpController {
                         Authorization: 'Bearer ' + tokenLine
                     }
                 });
+                console.log('lineUsers.data.userIds',lineUsers.data.userIds.length);
                 if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
-                    const chunks: number[][] = checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
+                    const chunks: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
                     chunks.forEach((user,i) => {
                         const worker = new Worker(process.env.WORKER_THREAD_PATH);
                         const messagePayload = {
@@ -503,37 +506,41 @@ export class PointMfpController {
                         };
                         
                         worker.postMessage(messagePayload);
-                        worker.on('message', (message:string) => {
-                            if(message === 'done') {
+                        worker.on('message', (result:any) => {
+                            if(result.message === 'done') {
+                                const workThreadModel: WorkerThread = new WorkerThread();
+                                workThreadModel.theThings = new ObjectID(lineOa._id);
+                                workThreadModel.sending = user.length;
+                                workThreadModel.sended = result.count;
+                                workThreadModel.type = type['line_noti'];
+                                this.workerThreadService.create(workThreadModel);
                                 console.log(`Worker ${i} completed.`);
                                 logMemoryUsage();
                             }
                         });
                     });
-                }
-                const pageLike = await this.configService.getConfig(LINE_NEWS_WEEK_OA);
-                let pageLikePoint = DEFAULT_LINE_NEWS_WEEK_OA;
-                if (pageLike) {
-                    pageLikePoint = parseInt(pageLike.value, 10);
-                }
-                const query = { _id: new ObjectID(lineOa._id) };
-                const count = parseInt(lineUsers.data.userIds.length, 10);
-                const newValues = { $set: { active: true, sending: count, sended: count} };
-                const update = await this.lineNewsWeekService.update(query, newValues);
-                if (update) {
-                    const twoWeeksAgo = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
-                    const lineNewsWeek: LineNewsWeek = new LineNewsWeek();
-                    lineNewsWeek.todayDate = today;
-                    lineNewsWeek.newsWeek = twoWeeksAgo;
-                    lineNewsWeek.active = false;
-                    lineNewsWeek.sending = 0;
-                    lineNewsWeek.sended = 0;
-                    const created = await this.lineNewsWeekService.create(lineNewsWeek);
-                    if (created) {
-                        return 'Line Flex message is success.';
+                    const pageLike = await this.configService.getConfig(LINE_NEWS_WEEK_OA);
+                    let pageLikePoint = DEFAULT_LINE_NEWS_WEEK_OA;
+                    if (pageLike) {
+                        pageLikePoint = parseInt(pageLike.value, 10);
                     }
+                    const query = { _id: new ObjectID(lineOa._id) };
+                    const newValues = { $set: { active: true} };
+                    const update = await this.lineNewsWeekService.update(query, newValues);
+                    if (update) {
+                        const twoWeeksAgo = new Date(today.getTime() + 24 * 60 * 60 * 1000 * pageLikePoint);
+                        const lineNewsWeek: LineNewsWeek = new LineNewsWeek();
+                        lineNewsWeek.todayDate = today;
+                        lineNewsWeek.newsWeek = twoWeeksAgo;
+                        lineNewsWeek.active = false;
+                        const created = await this.lineNewsWeekService.create(lineNewsWeek);
+                        if (created) {
+                            return 'Line Flex message is success.';
+                        }
+                    }
+                } else {
+                    return 'Line Flex message undefined.';
                 }
-                return 'Line Flex message undefined.';
             } else {
                 return 'Line Flex message is empty array.';
             }
@@ -552,7 +559,7 @@ interface MemoryUsage {
     arrayBuffers: number;
 }
 
-function checkify<T>(data: T[], n: number): T[][] {
+async function checkify<T>(data: T[], n: number): Promise<T[][]> {
     const chunks: T[][] = [];
     for(let i = n; i > 0; i--) {
         chunks.push(data.splice(0, Math.ceil(data.length / i)));

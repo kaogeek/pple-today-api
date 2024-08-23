@@ -4,22 +4,25 @@ import { ObjectID } from 'mongodb';
 import { BaseModel } from './BaseModel';
 import moment from 'moment';
 
-@Entity('LineNewsWeek')
-export class LineNewsWeek extends BaseModel {
+@Entity('WorkerThread')
+export class WorkerThread extends BaseModel {
 
     @ObjectIdColumn({ name: '_id' })
     @IsNotEmpty()
     @IsMongoId()
     public id: ObjectID;
 
-    @Column({ name: 'todayDate'})
-    public todayDate: Date;
+    @Column({ name: 'theThings'})
+    public theThings: any;
 
-    @Column({ name: 'newsWeek'})
-    public newsWeek: Date;
+    @Column({ name: 'sending'})
+    public sending: number;
 
-    @Column({ name: 'active'})
-    public active: boolean;
+    @Column({ name: 'sended'})
+    public sended: number;
+
+    @Column({ name: 'type'})
+    public type: string;
     
     @BeforeInsert()
     public createDetails(): any {

@@ -3,7 +3,7 @@ import { PostsGalleryService } from '../../services/PostsGalleryService';
 import { AssetService } from '../../services/AssetService';
 import { ResponseUtil } from '../../../utils/ResponseUtil';
 import { ObjectID } from 'mongodb';
-// import { S3Service } from '../../services/S3Service';
+import { S3Service } from '../../services/S3Service';
 import { PostsService } from '../../services/PostsService';
 import { AdminUserActionLogsService } from '../../services/AdminUserActionLogsService';
 import { AnalyticsService } from '../../services/AnalyticsService';
@@ -29,8 +29,8 @@ import { OtpService } from '../../services/OtpService';
 import { PostsCommentService } from '../../services/PostsCommentService';
 // import { ProductCategoryService } from '../../services/ProductCategoryService';
 import { SearchHistoryService } from '../../services/SearchHistoryService';
-import { SocialPostService } from '../../services/SocialPostService';
-import { SocialPostLogsService } from '../../services/SocialPostLogsService';
+// import { SocialPostService } from '../../services/SocialPostService';
+// import { SocialPostLogsService } from '../../services/SocialPostLogsService';
 import { StandardItemService } from '../../services/StandardItemService';
 import { StandardItemCategoryService } from '../../services/StandardItemCategoryService';
 import { UserLikeService } from '../../services/UserLikeService';
@@ -43,7 +43,7 @@ export class AdminDeleteAnyThingController {
     constructor(
         private postsGalleryService:PostsGalleryService,
         private assetService:AssetService,
-        // private s3Service:S3Service,
+        private s3Service:S3Service,
         private postsService:PostsService,
         private adminUserActionLogsService:AdminUserActionLogsService,
         private analyticsService:AnalyticsService,
@@ -68,8 +68,8 @@ export class AdminDeleteAnyThingController {
         private otpService:OtpService,
         private postsCommentService:PostsCommentService,
         private searchHistoryService:SearchHistoryService,
-        private socialPostService:SocialPostService,
-        private socialPostLogsService:SocialPostLogsService,
+        // private socialPostService:SocialPostService,
+        // private socialPostLogsService:SocialPostLogsService,
         private standardItemService:StandardItemService,
         private standardItemCategoryService:StandardItemCategoryService,
         private userLikeService:UserLikeService,
@@ -90,8 +90,8 @@ export class AdminDeleteAnyThingController {
                 for(const productAsset of productImages) {
                     if(new ObjectID(productAsset.asset) !== new ObjectID(item.fileId)) {
                         ids.push(new ObjectID(item.fileId));
-                        // const s3Path = item.s3FilePath;
-                        // await this.s3Service.deleteFile(s3Path);
+                        const s3Path = item.s3FilePath;
+                        await this.s3Service.deleteFile(s3Path);
                     } else {
                         continue;
                     }
@@ -126,8 +126,8 @@ export class AdminDeleteAnyThingController {
         await this.postsCommentService.deleteMany({});
         await this.postsGalleryService.deleteMany({});
         await this.searchHistoryService.deleteMany({});
-        await this.socialPostService.deleteMany({});
-        await this.socialPostLogsService.deleteMany({});
+        // await this.socialPostService.deleteMany({});
+        // await this.socialPostLogsService.deleteMany({});
         await this.standardItemService.deleteMany({});
         await this.standardItemCategoryService.deleteMany({});
         await this.userLikeService.deleteMany({});

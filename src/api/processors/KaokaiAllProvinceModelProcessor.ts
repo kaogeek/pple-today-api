@@ -102,7 +102,7 @@ export class KaokaiAllProvinceModelProcessor extends AbstractSeparateSectionProc
                         postId.push(new ObjectID(contents.post._id));
                     }
                 }
-                let postPics:any = null
+                let postPics:any = null;
                 const provincePage = await this.kaokaiTodayService.findOne({ position: sortV[0] });
                 if (provincePage !== undefined) {
                     postPics = provincePage.pics;
