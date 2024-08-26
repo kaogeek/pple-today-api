@@ -29,7 +29,7 @@ import { OtpService } from '../../services/OtpService';
 import { PostsCommentService } from '../../services/PostsCommentService';
 // import { ProductCategoryService } from '../../services/ProductCategoryService';
 import { SearchHistoryService } from '../../services/SearchHistoryService';
-// import { SocialPostService } from '../../services/SocialPostService';
+import { SocialPostService } from '../../services/SocialPostService';
 // import { SocialPostLogsService } from '../../services/SocialPostLogsService';
 import { StandardItemService } from '../../services/StandardItemService';
 import { StandardItemCategoryService } from '../../services/StandardItemCategoryService';
@@ -68,7 +68,7 @@ export class AdminDeleteAnyThingController {
         private otpService:OtpService,
         private postsCommentService:PostsCommentService,
         private searchHistoryService:SearchHistoryService,
-        // private socialPostService:SocialPostService,
+        private socialPostService:SocialPostService,
         // private socialPostLogsService:SocialPostLogsService,
         private standardItemService:StandardItemService,
         private standardItemCategoryService:StandardItemCategoryService,
@@ -91,7 +91,12 @@ export class AdminDeleteAnyThingController {
                     if(new ObjectID(productAsset.asset) !== new ObjectID(item.fileId)) {
                         ids.push(new ObjectID(item.fileId));
                         const s3Path = item.s3FilePath;
-                        await this.s3Service.deleteFile(s3Path);
+                        const deleteS3:any = await this.s3Service.deleteFile(s3Path);
+                        if(deleteS3) {
+                            continue;
+                        } else {
+                            continue;
+                        }
                     } else {
                         continue;
                     }
@@ -126,7 +131,7 @@ export class AdminDeleteAnyThingController {
         await this.postsCommentService.deleteMany({});
         await this.postsGalleryService.deleteMany({});
         await this.searchHistoryService.deleteMany({});
-        // await this.socialPostService.deleteMany({});
+        await this.socialPostService.deleteMany({});
         // await this.socialPostLogsService.deleteMany({});
         await this.standardItemService.deleteMany({});
         await this.standardItemCategoryService.deleteMany({});

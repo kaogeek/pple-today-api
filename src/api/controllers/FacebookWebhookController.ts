@@ -174,8 +174,10 @@ export class FacebookWebhookController {
         // body.entry[0].changes[0].value.photo_id
         const value_photo_id = body.entry[0].changes[0].value.photo_id;
 
+        // Note ** Do not delete this entity.
         const pageSubscribe = await this.socialPostLogsService.findOne({ providerUserId: String(body.entry[0].changes[0].value.from.id) });
         if (pageSubscribe === undefined) {
+            console.log('pass1');
             const successResponse = ResponseUtil.getSuccessResponse(Webhooks.thank_service_webhooks, undefined);
             return res.status(200).send(successResponse);
         }
