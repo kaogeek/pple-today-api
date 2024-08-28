@@ -1,32 +1,47 @@
 import { JsonController, Res, Post, Body, Req, Authorized } from 'routing-controllers';
-// , Put, Delete, Get
-// import { VotingEventRequest } from '../requests/VotingEventRequest';
-// import { VotingEventService } from '../../services/VotingEventService';
-// import { VoteItemService } from '../../services/VoteItemService';
-// import { VoteChoiceService } from '../../services/VoteChoiceService';
-// import { VotedService } from '../../services/VotedService';
 import { AuthenticationIdService } from '../../services/AuthenticationIdService';
-// import { UserSupportService } from '../../services/UserSupportService';
 import { UserService } from '../../services/UserService';
 import { PageService } from '../../services/PageService';
-// import { VotingEventModel } from '../../models/VotingEventModel';
 import { ResponseUtil } from '../../../utils/ResponseUtil';
-// import { ObjectID } from 'mongodb';
 import moment from 'moment';
-// import { SearchFilter } from '../requests/SearchFilterRequest';
 import { DashBoardRequest } from '../requests/DashBoardRequest';
-// import { ObjectUtil } from '../../../utils/ObjectUtil';
-// import { ConfigService } from '../../services/ConfigService';
+import { WorkerThreadService } from '../../services/WokerThreadService';
 import axios from 'axios';
 import { ObjectID } from 'mongodb';
+import { NotiTypeAction } from '../../../constants/WorkerThread';
 
 @JsonController('/admin/dashboard')
 export class AdminDashBoardController {
     constructor(
         private userService: UserService,
         private pageService: PageService,
-        private authenticationIdService: AuthenticationIdService
+        private authenticationIdService: AuthenticationIdService,
+        private workerThreadService:WorkerThreadService
     ) { }
+
+    @Post('/engagement')
+    @Authorized()
+    public async engagementDashboard(@Body({ validate: true }) search: DashBoardRequest, @Res() res: any, @Req() req: any): Promise<any>{
+        // lineNewsWeekId
+        // the_things
+        const aggsLineNoti:any = await this.workerThreadService.aggregate(
+            [
+                {
+                    $match: {
+                        createdDate: { $gte: new Date(search.createDateLineNoti), $lte: new Date(search.endDateLineNoti) },
+                        type: NotiTypeAction['line_noti']
+                    }
+                },
+                {
+                    $sort: {
+                        createdDate: -1
+                    }
+                },
+            ]
+        );
+        const successResponse = ResponseUtil.getSuccessResponse('DashBoard.', aggsLineNoti);
+        return res.status(200).send(successResponse);
+    }
 
     @Post('/')
     @Authorized()

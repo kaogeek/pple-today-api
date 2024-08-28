@@ -43,8 +43,8 @@ export class NotificationService {
     }
 
     // create Notification
-    public async create(searchHistory: Notification): Promise<Notification> {
-        return await this.notificationRepository.save(searchHistory);
+    public async create(data: any): Promise<Notification> {
+        return await this.notificationRepository.save(data);
     }
 
     // update Notification
@@ -103,6 +103,35 @@ export class NotificationService {
             return;
         }
     }
+
+    public async multiPushNotificationVoterMessage(data: any, tokenId: any): Promise<any> {
+        const title = data['title'];
+        const body = data['body'];
+        const image = data['image'];
+        const token = tokenId;
+        const notificationType = 'VOTE_EVENT';
+        const link = process.env.APP_HOME + `/vote/event/${data.pageId}`;
+        const payload =
+        {
+            tokens: token,
+            notification: {
+                title,
+                body,
+                image,
+            },
+            data: {
+                notificationType,
+                link
+            }
+        };
+
+        if (String(token) !== undefined) {
+            Promise.all([await admin.messaging().sendMulticast(payload)]);
+        } else {
+            return;
+        }
+    }
+
     public async multiPushNotificationMessage(data: any, tokenId: any, date: any, filterNews: boolean): Promise<any> {
         const title = 'ประชาชนหน้าหนึ่ง';
         let body = undefined;

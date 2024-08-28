@@ -7,48 +7,49 @@
 
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { VotingEventRepository } from '../repositories/VotingEventRepository';
+import { Logger, LoggerInterface } from '../../decorators/Logger';
+import { CacheRepository } from '../repositories/CacheRepository';
 @Service()
-export class VotingEventService {
+export class CacheService {
 
     constructor(
-        @OrmRepository() private votingEventRepository: VotingEventRepository,
-        ) {
+        @OrmRepository() private cacheRepository: CacheRepository,
+        @Logger(__filename) private log: LoggerInterface) {
     }
 
     // create Device token and find the user who is login !!!!!
     public async create(data: any): Promise<any> {
-        console.log('Create a voting event.');
-        return await this.votingEventRepository.save(data);
+        this.log.info('Create a cache.');
+        return await this.cacheRepository.save(data);
     }
 
     public async findOne(findCondition: any): Promise<any> {
-        return await this.votingEventRepository.findOne(findCondition);
+        return await this.cacheRepository.findOne(findCondition);
     }
 
     public async find(findCondition?: any): Promise<any> {
-        return await this.votingEventRepository.find(findCondition);
+        return await this.cacheRepository.find(findCondition);
     }
 
     public async delete(query: any, options?: any): Promise<any> {
-        console.log('Delete a voting event.');
-        return await this.votingEventRepository.deleteOne(query, options);
+        this.log.info('Delete a cache.');
+        return await this.cacheRepository.deleteOne(query, options);
     }
     public async deleteMany(query: any, options?: any): Promise<any> {
-        return await this.votingEventRepository.deleteMany(query, options);
+        return await this.cacheRepository.deleteMany(query, options);
     }
     public async update(query: any, newValue: any): Promise<any> {
-        console.log('Update a voting event.');
+        this.log.info('Update a cache.');
 
-        return await this.votingEventRepository.updateOne(query, newValue);
+        return await this.cacheRepository.updateOne(query, newValue);
     }
 
         // update many post
     public async updateMany(query: any, newValue: any, options?: any): Promise<any> {
-        return await this.votingEventRepository.updateMany(query, newValue, options);
+        return await this.cacheRepository.updateMany(query, newValue, options);
     }
 
     public async aggregate(query: any, options?: any): Promise<any[]> {
-        return await this.votingEventRepository.aggregate(query, options).toArray();
+        return await this.cacheRepository.aggregate(query, options).toArray();
     }
 }

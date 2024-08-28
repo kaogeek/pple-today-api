@@ -6,9 +6,10 @@
  */
 
 import 'reflect-metadata';
-import { JsonController, Res, Req, Post, Body } from 'routing-controllers';
+import { JsonController, Res, Req, Post, Body, Patch, Authorized, Param } from 'routing-controllers';
 import { ObjectID } from 'mongodb';
 import { UserEngagementService } from '../services/UserEngagementService';
+import { UserEngagementUpdateRequest } from './requests/UserEngagementUpdateRequest';
 import { UserEngagementRequest } from './requests/UserEngagementRequest';
 import { UserEngagement } from '../models/UserEngagement';
 import { ResponseUtil } from '../../utils/ResponseUtil';
@@ -25,6 +26,21 @@ export class UserEngagementController {
         private userEngagementService: UserEngagementService,
         private configService: ConfigService
     ) { }
+
+    @Patch('/:id')
+    @Authorized('user')
+    public async updateEngagement(@Param('id') id: string, @Body({ validate: true }) userEngagementUpdateRequest: UserEngagementUpdateRequest, @Res() res: any, @Req() req: any): Promise<any> {
+        const query = {_id: new ObjectID(id)};
+        const newValues = { $set: { commentId: userEngagementUpdateRequest.commentId, likeId: userEngagementUpdateRequest.likeId}};
+        const update:any = await this.userEngagementService.update(query, newValues);
+        if(update) {
+            const errorResponse = ResponseUtil.getSuccessResponse('Update Engagement success.', undefined);
+            return res.status(200).send(errorResponse);
+        } else {
+            const errorResponse = ResponseUtil.getErrorResponse('Update Engagement Failed.', undefined);
+            return res.status(400).send(errorResponse);
+        }
+    }
 
     // Create UserEngagement API
     /**
@@ -47,16 +63,11 @@ export class UserEngagementController {
      */
     @Post('/')
     public async createEngagement(@Body({ validate: true }) userEngagementBody: UserEngagementRequest, @Res() res: any, @Req() req: any): Promise<any> {
-
-        if(Engage_action.includes(userEngagementBody.action) === false) {
+        const idx:number = Engage_action.indexOf(userEngagementBody.action);
+        if(idx === -1) {
             const errorResponse = ResponseUtil.getErrorResponse('Type is not correct.', undefined);
             return res.status(400).send(errorResponse);
         } 
-        const idx:number = Engage_action.indexOf(userEngagementBody.action);
-        if (idx !== -1) {
-            const errorResponse = ResponseUtil.getErrorResponse('Type is not found.', undefined);
-            return res.status(400).send(errorResponse);
-        }
 
         let score = 2;
 
@@ -79,7 +90,6 @@ export class UserEngagementController {
         const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
         const user = await this.userEngagementService.findOne({ where: { contentId:  userEngagementBody.contentId, contentType: userEngagementBody.contentType, action: userEngagementBody.action} });
         let userEngagementAction: UserEngagement;
-
         const userEngagement = new UserEngagement();
         userEngagement.clientId = clientId;
         userEngagement.ip = ipAddress; 
@@ -87,12 +97,12 @@ export class UserEngagementController {
         userEngagement.userId = userId ? new ObjectID(req.headers.userid) : '';
         userEngagement.contentId = userEngagementBody.contentId;
         userEngagement.contentType = userEngagementBody.contentType;
-        userEngagement.action = userEngagementBody.action;
+        userEngagement.action = userEngagementBody.action.toLocaleUpperCase().trim();
         userEngagement.reference = userEngagementBody.reference;
         userEngagement.point = score;
-        userEngagement.postId = userEngagementBody.postId === null ? null : new ObjectID(userEngagementBody.postId);
-        userEngagement.voteId = userEngagementBody.voteId === null ? null : new ObjectID(userEngagementBody.voteId);
-        userEngagement.isReadId = userEngagementBody.isReadId === null ? null : new ObjectID(userEngagementBody.isReadId);
+        userEngagement.postId = userEngagementBody.postId === '' ? '' : new ObjectID(userEngagementBody.postId);
+        userEngagement.voteId = userEngagementBody.voteId === '' ? '' : new ObjectID(userEngagementBody.voteId);
+        userEngagement.isReadId = userEngagementBody.isReadId === '' ? '' : new ObjectID(userEngagementBody.isReadId);
        
         if(user){ 
             userEngagement.isFirst = false;

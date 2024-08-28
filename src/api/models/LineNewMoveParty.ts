@@ -12,6 +12,9 @@ export class LineNewMoveParty extends BaseModel {
     @IsMongoId()
     public id: ObjectID;
 
+    @Column({ name: 'lineNewsWeekId'})
+    public lineNewsWeekId: ObjectID;
+
     @Column({ name: 'objIds'})
     public objIds: [];
     

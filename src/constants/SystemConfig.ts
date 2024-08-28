@@ -66,7 +66,7 @@ export const TODAY_DATETIME_GAP = 'today.datetime.gap';
 export const DEFAULT_TODAY_DATETIME_GAP = 30;
 
 export const KAOKAITODAY_TIMER_CHECK_DATE = 'kaokaiToday.snapshot.timer.check.date';
-export const DEFAULT_KAOKAITODAY_TIMER_CHECK_DAY = '06:00';
+export const DEFAULT_KAOKAITODAY_TIMER_CHECK_DAY = '07:00';
 
 export const KAOKAITODAY_RANGE_DATE_EMERGENCY ='kaokaiToday.time.emergencyEvent.date';
 export const DEFAULT_KAOKAITODAY_RANGE_DATE_EMERGENY =365;
@@ -183,3 +183,8 @@ export const PAGE_LIKE_POINT = 'page.like.point';
 
 export const DEFAULT_LINE_NEWS_WEEK_OA = 14;
 export const LINE_NEWS_WEEK_OA = 'line.news.week.oa';
+
+export const NOTI_VOTER = 'noti.voter';
+
+export const DEFAULT_SPECIFIC_NOTI_VOTER = false;
+export const SPECIFIC_NOTI_VOTER = 'specific.noti.voter';

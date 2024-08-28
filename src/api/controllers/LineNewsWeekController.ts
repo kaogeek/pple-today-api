@@ -16,7 +16,8 @@ import axios from 'axios';
 import { Worker} from 'worker_threads';
 import { WorkerThread } from '../models/WokerThreadModel';
 import { WorkerThreadService } from '../services/WokerThreadService';
-import { type } from '../../constants/WorkerThread';
+import { NotiTypeAction } from '../../constants/WorkerThread';
+import { checkify  } from '../../utils/ChuckWorkerThreadUtil';
 // startVoteDatetime
 @JsonController('/line')
 export class PointMfpController {
@@ -104,6 +105,7 @@ export class PointMfpController {
 
     private async lineOaNoti(data: any, today: any, rangeEnd: any, lineOa: any): Promise<any> {
         const objStackIds: any = [];
+        const postIds:any = [];
         for (const line of data) {
             line.objIds.map((ids:any) => objStackIds.push(new ObjectID(ids)));
         }
@@ -168,6 +170,8 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
+                    const postId:any =  kaokai.data.pageRoundRobin.contents[0] !== undefined ? kaokai.data.pageRoundRobin.contents[0].post._id : kaokai.data.majorTrend.contents[0].post._id;
+                    postIds.push(new ObjectID(postId));
                     content['messages'][0].contents.body.contents.push(
                         {
                             'type': 'image',
@@ -263,6 +267,8 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
+                    const postId:any =  kaokai.data.pageRoundRobin.contents[0] !== undefined ? kaokai.data.pageRoundRobin.contents[0].post._id : kaokai.data.majorTrend.contents[0].post._id;
+                    postIds.push(new ObjectID(postId));
                     content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
@@ -341,6 +347,9 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
+
+                    const postId:any = kaokai.data.pageRoundRobin.contents[0] !== undefined ? kaokai.data.pageRoundRobin.contents[0].post._id : kaokai.data.majorTrend.contents[0].post._id;
+                    postIds.push(new ObjectID(postId));
                     content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
@@ -420,6 +429,8 @@ export class PointMfpController {
                         month: 'long',
                         day: 'numeric',
                     });
+                    const postId:any = kaokai.data.pageRoundRobin.contents[0] !== undefined ? kaokai.data.pageRoundRobin.contents[0].post._id : kaokai.data.majorTrend.contents[0].post._id;
+                    postIds.push(new ObjectID(postId));
                     content['messages'][0].contents.body.contents[1].contents[1].contents.push(
                         {
                             'type': 'box',
@@ -483,6 +494,7 @@ export class PointMfpController {
             }
 
             const lineNewMoveParty = new LineNewMoveParty();
+            lineNewMoveParty.lineNewsWeekId = new ObjectID(lineOa._id);
             lineNewMoveParty.objIds = stackIds;
             const tokenLine = process.env.LINE_AUTHORIZATION;
             const create = await this.lineNewMovePartyService.create(lineNewMoveParty);
@@ -494,26 +506,28 @@ export class PointMfpController {
                         Authorization: 'Bearer ' + tokenLine
                     }
                 });
-                console.log('lineUsers.data.userIds',lineUsers.data.userIds.length);
                 if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
+                    const workThreadModel: WorkerThread = new WorkerThread();
+                    workThreadModel.theThings = new ObjectID(lineOa._id);
+                    workThreadModel.sending = lineUsers.data.userIds.length;
+                    workThreadModel.sended = 0;
+                    workThreadModel.type = NotiTypeAction['line_noti'];
+                    workThreadModel.postIds = postIds;
+                    workThreadModel.active = false;
+                    await this.workerThreadService.create(workThreadModel);
                     const chunks: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
                     chunks.forEach((user,i) => {
                         const worker = new Worker(process.env.WORKER_THREAD_PATH);
                         const messagePayload = {
                             users: user,
                             messages: JSON.stringify(content['messages']),
+                            type: 'LINE_NOTI',
                             token: tokenLine
                         };
                         
                         worker.postMessage(messagePayload);
-                        worker.on('message', (result:any) => {
+                        worker.on('message', async (result:any) => {
                             if(result.message === 'done') {
-                                const workThreadModel: WorkerThread = new WorkerThread();
-                                workThreadModel.theThings = new ObjectID(lineOa._id);
-                                workThreadModel.sending = user.length;
-                                workThreadModel.sended = result.count;
-                                workThreadModel.type = type['line_noti'];
-                                this.workerThreadService.create(workThreadModel);
                                 console.log(`Worker ${i} completed.`);
                                 logMemoryUsage();
                             }
@@ -557,14 +571,6 @@ interface MemoryUsage {
     heapUsed: number;
     external: number;
     arrayBuffers: number;
-}
-
-async function checkify<T>(data: T[], n: number): Promise<T[][]> {
-    const chunks: T[][] = [];
-    for(let i = n; i > 0; i--) {
-        chunks.push(data.splice(0, Math.ceil(data.length / i)));
-    }
-    return chunks;
 }
 
 function logMemoryUsage(): void {

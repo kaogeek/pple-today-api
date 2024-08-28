@@ -64,6 +64,9 @@ import { EmergencyFollowingPostSectionModelProcessor } from '../processors/Emerg
 import { ObjectiveFollowingPostSectionModelProcessor } from '../processors/ObjectiveFollowingPostSectionModelProcessor';
 import { UserFollowingPostSectionModelProcessor } from '../processors/UserFollowingPostSectionModelProcessor';
 import { FollowingProvinceSectionModelProcessor } from '../processors/FollowingProvinceSectionModelProcessor';
+import { UserEngagement } from '../models/UserEngagement';
+import { UserEngagementService } from '../services/UserEngagementService';
+import { Worker} from 'worker_threads';
 // import { PostsGalleryService } from '../services/PostsGalleryService';
 import {
     TODAY_DATETIME_GAP,
@@ -115,6 +118,10 @@ import { PointStatementModel } from '../models/PointStatementModel';
 import { PointStatementService } from '../services/PointStatementService';
 import { AccumulateService } from '../services/AccumulateService';
 import { AccumulateModel } from '../models/AccumulatePointModel';
+import { WorkerThread } from '../models/WokerThreadModel';
+import { WorkerThreadService } from '../services/WokerThreadService';
+import { NotiTypeAction } from '../../constants/WorkerThread';
+import { checkify } from '../../utils/ChuckWorkerThreadUtil';
 @JsonController('/main')
 export class MainPageController {
     constructor(
@@ -141,7 +148,9 @@ export class MainPageController {
         private hidePostService: HidePostService,
         private newsClickService: NewsClickService,
         private pointStatementService:PointStatementService,
-        private accumulateService:AccumulateService
+        private accumulateService:AccumulateService,
+        private workerThreadService:WorkerThreadService,
+        private userEngagementService:UserEngagementService
         // private postsGalleryService: PostsGalleryService
     ) { }
     // Home page content V2
@@ -1592,17 +1601,63 @@ export class MainPageController {
     public async isRead(@Body({ validate: true }) data: IsRead, @Res() res: any, @Req() req: any): Promise<any> {
         const userId = req.headers.userid;
         const objIds = new ObjectID(userId);
+        const clientId = req.headers['client-id']; 
+        const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+        let count = 0;
+        if(data.action !== '') {
+            for(const item of data.postId) {
+                count += 1;
+                const workerTheadFindOne:any = await this.workerThreadService.findOne({theThings: new ObjectID(item), type: data.action.toLocaleUpperCase().trim()});
+                const userEngagement = new UserEngagement();
+                userEngagement.clientId = clientId;
+                userEngagement.ip = ipAddress; 
+                userEngagement.device = data.device.toLowerCase().trim();
+                userEngagement.userId = userId ? new ObjectID(req.headers.userid) : '';
+                userEngagement.contentId = '';
+                userEngagement.contentType = '';
+                userEngagement.action = data.action.toLocaleUpperCase().trim();
+                userEngagement.reference = '';
+                userEngagement.point = 5;
+                userEngagement.postId = new ObjectID(item);
+                userEngagement.voteId = '';
+                userEngagement.isReadId = '';
+                await this.userEngagementService.create(userEngagement);
+                if(workerTheadFindOne !== undefined) {
+                    await this.workerThreadService.update({_id: workerTheadFindOne.id }, {$set : {sended: workerTheadFindOne.sended + count}});
+                }
+            } 
+        } else {
+            for(const item of data.postId) {
+                const userEngagement = new UserEngagement();
+                userEngagement.clientId = clientId;
+                userEngagement.ip = ipAddress; 
+                userEngagement.device = data.device.toLowerCase().trim();
+                userEngagement.userId = userId ? new ObjectID(req.headers.userid) : '';
+                userEngagement.contentId = '';
+                userEngagement.contentType = '';
+                userEngagement.action = data.action.toUpperCase().trim();
+                userEngagement.reference = '';
+                userEngagement.point = 5;
+                userEngagement.postId = new ObjectID(item);
+                userEngagement.voteId = '';
+                userEngagement.isReadId = '';
+                await this.userEngagementService.create(userEngagement);
+            } 
+        }
         // check is read
         if (objIds) {
             // check is read
-            const isRead: IsRead = new IsRead();
-            isRead.userId = objIds;
-            isRead.postId = data.postId;
-            isRead.isRead = data.isRead;
-            isRead.createdDate = moment().toDate();
             const isReadPost = await this.isReadPostService.findOneAndUpdate(
                 { userId: objIds },
-                { $set: { postId: data.postId, isRead: data.isRead } },
+                { $set: 
+                    { 
+                        postId: data.postId, 
+                        isRead: data.isRead,
+                        device: data.device.toLowerCase().trim(),
+                        action: data.action.toUpperCase().trim(),
+                        createdDate: new Date(),                    
+                    } 
+                },
                 { upsert: true, new: true }
             );
             if (isReadPost) {
@@ -3122,6 +3177,7 @@ export class MainPageController {
             result.count = 0;
             result.sumCount = 0;
             const snapshot = await this.kaokaiTodaySnapShotService.create(result);
+
             // kaokaiToday.case.send.email.available === false ใช้ในการ switch ว่าจะส่ง email หาทั้งหมดหรือส่งเฉพาะกลุ่ม
             // ถ้า true ส่งเฉพาะบ้างกลุ่ม
             // ถ้า false ส่งทั้งหมด
@@ -3130,7 +3186,7 @@ export class MainPageController {
                 for (const userEmail of emailStack) {
                     user = await this.userService.findOne({ email: userEmail.toString() });
                     if (user.subscribeEmail === true) {
-                        await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนวันนี้', endDateTimeToday);
+                        // await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนวันนี้', endDateTimeToday);
                     } else {
                         continue;
                     }
@@ -3140,7 +3196,7 @@ export class MainPageController {
                 if (snapshot) {
                     for (const user of users) {
                         if (user.subscribeEmail === true) {
-                            await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนหน้าหนึ่ง', endDateTimeToday);
+                            // await this.sendEmail(user, user.email, snapshot.data, 'ประชาชนหน้าหนึ่ง', endDateTimeToday);
                         } else {
                             continue;
                         }
@@ -3152,6 +3208,7 @@ export class MainPageController {
             // ถ้า false ส่งทั้งหมด
             // emailStack คือ email ที่อยู่ใน list ของคนเฉพาะที่เราจะส่งไป  -> send.email.to.user
             if (String(sendNotification) === 'true' && snapshot) {
+                console.log('pass1');
                 for (const userEmail of emailStack) {
                     const user = await this.userService.findOne({ email: userEmail.toString() });
                     const deviceToken = await this.deviceTokenService.aggregate(
@@ -3189,41 +3246,47 @@ export class MainPageController {
                     }
                 }
                 if (fireBaseToken.length > 0) {
+                    const postIds: any[] = [];
                     const token = fireBaseToken.filter((element, index) => {
                         return fireBaseToken.indexOf(element) === index;
                     });
-                    const originalArray = Array.from({ length: token.length }, (_, i) => i + 1); // Create the original array [1, 2, 3, ..., 50000]
-                    const slicedArrays = [];
-                    const batchSize = 499;
-                    let sendMulticast = undefined;
-                    for (let i = 0; i < originalArray.length; i += batchSize) {
-                        const slicedArray = token.slice(i, i + batchSize);
-                        slicedArrays.push(slicedArray);
-                    }
-                    if (slicedArrays.length > 0) {
-                        for (let j = 0; j < slicedArrays.length; j++) {
-                            sendMulticast = await this.notificationService.multiPushNotificationMessage(snapshot.data, slicedArrays[j], endDateTimeToday, filterNews);
+                    if (String(filterNews) === 'true') {
+                        if(snapshot.data.pageRoundRobin.contents.length > 0) {
+                            postIds.push(new ObjectID(snapshot.data.pageRoundRobin.contents[0].post._id));
                         }
-                        if (sendMulticast) {
-                            await this.notificationNewsService.create(
-                                {
-                                    kaokaiTodaySnapShotId: snapshot.id,
-                                    data: snapshot.data,
-                                    tokenFCM: undefined,
-                                    startDateTime: endDateTimeToday,
-                                    endDateTime: endDateTimeToday,
-                                    total: token.length,
-                                    send: token.length + 1,
-                                    finish: true,
-                                    type: 'notification_news',
-                                    status: true
-                                }
-                            );
-                        }
+                    } else {
+                        postIds.push(new ObjectID(snapshot.data.majorTrend.contents[0].post._id));
                     }
+
+                    const workThreadModel: WorkerThread = new WorkerThread();
+                    workThreadModel.theThings = new ObjectID(result.id);
+                    workThreadModel.sending = token.length;
+                    workThreadModel.sended = 0;
+                    workThreadModel.postIds = postIds;
+                    workThreadModel.type = NotiTypeAction['pple_news_noti'];
+                    workThreadModel.active = false;
+                    await this.workerThreadService.create(workThreadModel);
+                    const chunks: number[][] = await checkify(fireBaseToken, Number(process.env.WORKER_THREAD_JOBS));
+                    chunks.forEach((item,i) => {
+                        const workerThread = new Worker(process.env.WORKER_THREAD_PATH);
+                        const messagePayload = {
+                            'snapshot': snapshot.data,
+                            'token': item,
+                            'date': endDateTimeToday,
+                            'filterNews':filterNews,
+                            'type': NotiTypeAction['pple_news_noti'],
+                        };
+                        
+                        workerThread.postMessage(messagePayload);
+                        workerThread.on('message', async (feedback:any) => {
+                            if(feedback.message === 'done') {
+                                console.log(`Worker ${i} completed.`);
+                            }
+                        });
+                    });
                 }
-                // if config kaokaiToday.case.send.noti.available === false that means send noti the the people.
             } else {
+                console.log('pass2');
                 const deviceToken = await this.deviceTokenService.aggregate(
                     [
                         {
@@ -3257,38 +3320,76 @@ export class MainPageController {
                     }
                 }
                 if (fireBaseToken.length > 0) {
+                    const postIds: any[] = [];
                     const token = fireBaseToken.filter((element, index) => {
                         return fireBaseToken.indexOf(element) === index;
                     });
-                    const originalArray = Array.from({ length: token.length }, (_, i) => i + 1); // Create the original array [1, 2, 3, ..., 50000]
-                    const slicedArrays = [];
-                    const batchSize = 499;
-                    let sendMulticast = undefined;
-                    for (let i = 0; i < originalArray.length; i += batchSize) {
-                        const slicedArray = token.slice(i, i + batchSize);
-                        slicedArrays.push(slicedArray);
-                    }
-                    if (slicedArrays.length > 0) {
-                        for (let j = 0; j < slicedArrays.length; j++) {
-                            sendMulticast = await this.notificationService.multiPushNotificationMessage(snapshot.data, slicedArrays[j], endDateTimeToday, filterNews);
+
+                    if (String(filterNews) === 'true') {
+                        if(snapshot.data.pageRoundRobin.contents.length > 0) {
+                            for (let i = 0; i < snapshot.data.pageRoundRobin.contents.length; i++) {
+                                postIds.push(new ObjectID(snapshot.data.pageRoundRobin.contents.contents[i].post._id));
+                            }
                         }
-                        if (sendMulticast) {
-                            await this.notificationNewsService.create(
-                                {
-                                    kaokaiTodaySnapShotId: snapshot.id,
-                                    data: snapshot.data,
-                                    tokenFCM: undefined,
-                                    startDateTime: endDateTimeToday,
-                                    endDateTime: endDateTimeToday,
-                                    total: token.length,
-                                    send: token.length + 1,
-                                    finish: true,
-                                    type: 'notification_news',
-                                    status: true
-                                }
-                            );
-                        }
+                    } else {
+                        postIds.push(new ObjectID(snapshot.data.majorTrend.contents[0].post._id));
                     }
+
+                    const workThreadModel: WorkerThread = new WorkerThread();
+                    workThreadModel.theThings = new ObjectID(result.id);
+                    workThreadModel.sending = token.length;
+                    workThreadModel.sended = 0;
+                    workThreadModel.postIds = postIds;
+                    workThreadModel.type = NotiTypeAction['pple_news_noti'];
+                    workThreadModel.active = false;
+                    await this.workerThreadService.create(workThreadModel);
+                    const chunks: number[][] = await checkify(deviceToken, Number(process.env.WORKER_THREAD_JOBS));
+                    chunks.forEach((item,i) => {
+                        const workerThread = new Worker(process.env.WORKER_THREAD_PATH);
+                        const messagePayload = {
+                            'snapshot': snapshot.data,
+                            'token': item,
+                            'date': endDateTimeToday,
+                            'filterNews':filterNews,
+                            'type': NotiTypeAction['pple_news_noti'],
+                        };
+                        
+                        workerThread.postMessage(messagePayload);
+                        workerThread.on('message', async (feedback:any) => {
+                            if(feedback.message === 'done') {
+                                console.log(`Worker ${i} completed.`);
+                            }
+                        });
+                    });
+                    // const originalArray = Array.from({ length: token.length }, (_, i) => i + 1); // Create the original array [1, 2, 3, ..., 50000]
+                    // const slicedArrays = [];
+                    // const batchSize = 499;
+                    // let sendMulticast = undefined;
+                    // for (let i = 0; i < originalArray.length; i += batchSize) {
+                    //     const slicedArray = token.slice(i, i + batchSize);
+                    //     slicedArrays.push(slicedArray);
+                    // }
+                    // if (slicedArrays.length > 0) {
+                    //     for (let j = 0; j < slicedArrays.length; j++) {
+                    //         // sendMulticast = await this.notificationService.multiPushNotificationMessage(snapshot.data, slicedArrays[j], endDateTimeToday, filterNews);
+                    //     }
+                    //     if (sendMulticast) {
+                    //         // await this.notificationNewsService.create(
+                    //         //     {
+                    //         //         kaokaiTodaySnapShotId: snapshot.id,
+                    //         //         data: snapshot.data,
+                    //         //         tokenFCM: undefined,
+                    //         //         startDateTime: endDateTimeToday,
+                    //         //         endDateTime: endDateTimeToday,
+                    //         //         total: token.length,
+                    //         //         send: token.length + 1,
+                    //         //         finish: true,
+                    //         //         type: 'notification_news',
+                    //         //         status: true
+                    //         //     }
+                    //         // );
+                    //     }
+                    // }
                 }
             }
             return snapshot;
@@ -3329,8 +3430,7 @@ export class MainPageController {
             const errorResponse = ResponseUtil.getErrorResponse('Date time undefined.', undefined);
             return errorResponse;
         }
-        // chaluck.s@absolute.co.th
-        // junsuda.s@absolute.co.th
+
         let postSection = undefined;
         let linkPostSection = undefined;
         let picPostSection = undefined;

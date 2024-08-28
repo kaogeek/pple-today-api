@@ -15,6 +15,7 @@ import { HashTagService } from '../services/HashTagService';
 import { UserSupportService } from '../services/UserSupportService';
 import { VotingEventModel } from '../models/VotingEventModel';
 // import { RetrieveVotingOptionsModel } from '../models/RetrieveVotingOptionsModel';
+import { Worker} from 'worker_threads';
 import { UserSupport as UserSupportModel } from '../models/UserSupportModel';
 import { ResponseUtil } from '../../utils/ResponseUtil';
 import { ObjectID } from 'mongodb';
@@ -27,6 +28,8 @@ import { ObjectUtil } from '../../utils/ObjectUtil';
 import { SearchFilter } from './requests/SearchFilterRequest';
 import { S3Service } from '../services/S3Service';
 // import { DeviceToken } from '../models/DeviceToken';
+import { DeviceTokenService } from '../services/DeviceToken';
+// import { NotificationService } from '../services/NotificationService';
 import axios from 'axios';
 import qs from 'qs';
 import * as path from 'path';
@@ -37,6 +40,8 @@ import { PointStatementModel } from '../models/PointStatementModel';
 import { PointStatementService } from '../services/PointStatementService';
 import { AccumulateModel } from '../models/AccumulatePointModel';
 import { AccumulateService } from '../services/AccumulateService';
+import { NotiTypeAction } from '../../constants/WorkerThread';
+import { checkify } from '../../utils/ChuckWorkerThreadUtil';
 import {
     DEFAULT_MIN_SUPPORT,
     MIN_SUPPORT,
@@ -58,7 +63,10 @@ import {
     MAX_VOTE_QUESTIONS,
     PRIVILEGES,
     DEFAULT_VOTE_POINT,
-    VOTE_POINT
+    VOTE_POINT,
+    NOTI_VOTER,
+    DEFAULT_SPECIFIC_NOTI_VOTER,
+    SPECIFIC_NOTI_VOTER,
 } from '../../constants/SystemConfig';
 import { ConfigService } from '../services/ConfigService';
 import { VoteItem as VoteItemModel } from '../models/VoteItemModel';
@@ -72,6 +80,10 @@ import { PageAccessLevelService } from '../services/PageAccessLevelService';
 import { PAGE_ACCESS_LEVEL } from '../../constants/PageAccessLevel';
 import { HashTag } from '../models/HashTag';
 import { POINT_TYPE } from '../../constants/PointType';
+import { WorkerThread } from '../models/WokerThreadModel';
+import { WorkerThreadService } from '../services/WokerThreadService';
+import { IsReadVote} from './requests/IsReadVote';
+import { IsReadPostService } from '../services/IsReadPostService';
 // startVoteDatetime
 @JsonController('/voting')
 export class VotingController {
@@ -92,9 +104,71 @@ export class VotingController {
         private s3Service: S3Service,
         private userEngagementService: UserEngagementService,
         private pointStatementService: PointStatementService,
-        private accumulateService: AccumulateService
+        private accumulateService: AccumulateService,
+        private deviceTokenService:DeviceTokenService,
+        private workerThreadService:WorkerThreadService,
+        private isReadPostService:IsReadPostService
+        // private notificationService: NotificationService
         // private retrieveVoteService: RetrieveVoteService
     ) { }
+
+    @Post('/is/read')
+    public async isRead(@Body({ validate: true }) data: IsReadVote, @Res() res: any, @Req() req: any): Promise<any> {
+        const userId = req.headers.userid;
+        const objIds = new ObjectID(userId);
+
+        const clientId = req.headers['client-id']; 
+        const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+        let count = 0;
+        for(const item of data.voteId) {
+            count += 1;
+            const workerTheadFindOne:any = await this.workerThreadService.findOne({theThings: new ObjectID(item), type: data.action.toLocaleUpperCase().trim()});
+            const userEngagement = new UserEngagement();
+            userEngagement.clientId = clientId;
+            userEngagement.ip = ipAddress; 
+            userEngagement.device = data.device.toLowerCase().trim();
+            userEngagement.userId = userId ? new ObjectID(req.headers.userid) : '';
+            userEngagement.contentId = '';
+            userEngagement.contentType = '';
+            userEngagement.action = data.action.toUpperCase().trim();
+            userEngagement.reference = '';
+            userEngagement.point = 5;
+            userEngagement.postId = '';
+            userEngagement.voteId = new ObjectID(item);
+            userEngagement.isReadId = '';
+            await this.userEngagementService.create(userEngagement);
+            if(workerTheadFindOne !== undefined) {
+                await this.workerThreadService.update({_id: workerTheadFindOne.id }, {$set : {sended: workerTheadFindOne.sended + count}});
+            }
+        }
+        // check is read
+        if (objIds) {
+            // check is read
+
+            const isReadPost = await this.isReadPostService.findOneAndUpdate(
+                { userId: objIds },
+                { 
+                    $set: 
+                    { 
+                        voteId: data.voteId, 
+                        isRead: data.isRead,
+                        device: data.device.toLowerCase().trim(),
+                        action: data.action.toUpperCase().trim(),
+                        createdDate: new Date(),
+                    } 
+                },
+                { upsert: true, new: true }
+            );
+            if (isReadPost) {
+                const successResponse = ResponseUtil.getSuccessResponse('The content has already been read.', isReadPost);
+                return res.status(200).send(successResponse);
+            }
+        } else {
+            const errorResponse = ResponseUtil.getErrorResponse('Cannot find User.', undefined);
+            return res.status(400).send(errorResponse);
+        }
+
+    }
 
     @Get('/:id')
     public async getVotingEvent(@Param('id') id: string, @Res() res: any, @Req() req: any): Promise<any> {
@@ -6179,6 +6253,7 @@ export class VotingController {
         const supportDaysRange = votingEventRequest.supportDaysRange;
         const voteDaysRange = votingEventRequest.voteDaysRange;
         const showed = votingEventRequest.showVoterName ? votingEventRequest.showVoterName : false;
+
         if (approve === true) {
             const errorResponse = ResponseUtil.getErrorResponse('You are trying to do something badly cannot manual the API to approve TRUE! By yourself', undefined);
             return res.status(400).send(errorResponse);
@@ -6363,7 +6438,7 @@ export class VotingController {
         const votingEvent = new VotingEventModel();
         votingEvent.title = title;
         votingEvent.detail = detail;
-        votingEvent.assetId = votingEventRequest.assetId;
+        votingEvent.assetId = new ObjectID(votingEventRequest.assetId);
         votingEvent.coverPageURL = coverImage;
         votingEvent.s3CoverPageURL = signUrl;
         // votingEvent.needed = needed;
@@ -6394,91 +6469,258 @@ export class VotingController {
         votingEvent.hide = hideMode;
         const result = await this.votingEventService.create(votingEvent);
 
-        const stackVoteItem: any = {
-            'VoteItem': [],
-            'VoteChoice': []
-        };
-        if (result) {
-            // const stackVoteItems:any = {};
-            if (votingEventRequest.voteItem.length > 0) {
-                for (const voteItems of votingEventRequest.voteItem) {
-                    if (voteItems.titleItem !== '') {
-                        const voteItem = new VoteItemModel();
-                        voteItem.votingId = result.id;
-                        voteItem.ordering = voteItems.ordering;
-                        voteItem.type = voteItems.typeChoice;
-                        voteItem.title = voteItems.titleItem;
-                        voteItem.assetId = voteItems.assetIdItem;
-                        voteItem.coverPageURL = voteItems.coverPageURLItem;
-                        voteItem.s3CoverPageURL = voteItems.s3CoverPageURLItem;
-                        voteItem.userId = userObjId;
-                        voteItem.pageId = new ObjectID(pageObjId);
-                        const createVoteItem = await this.voteItemService.create(voteItem);
-                        if (createVoteItem) {
-                            stackVoteItem['VoteItem'].push(createVoteItem);
-                            const createdVoteChoice = await this.CreateVoteChoice(createVoteItem, voteItems, userObjId, pageObjId);
-                            stackVoteItem['VoteChoice'].push(createdVoteChoice);
+        // TODO : Noti voter
+        const notiVoter:any = await this.configService.getConfig(NOTI_VOTER);
+        if(result) {
+            const splitVoter:any = notiVoter.value.split(',');
+            let deviceToken:any = null;
+            if (splitVoter.length > 0 && splitVoter.includes(String(pageObjId)) === true) {   
+                let defaultNotiVoter:any = DEFAULT_SPECIFIC_NOTI_VOTER;
+                const notiVoterConfig:any = await this.configService.getConfig(SPECIFIC_NOTI_VOTER);
+                if (notiVoterConfig) {
+                    defaultNotiVoter = notiVoterConfig.value;
+                }
+                const fireBaseToken:any[] = [];
+                // ถ้าเป็น true ส่ง noti หาทุกคน 
+                if(defaultNotiVoter === String('true')) {
+                    console.log('pass1');
+                    deviceToken = await this.deviceTokenService.aggregate([
+                        {
+                            $match: {
+                                $and: [
+                                    { token: { $ne: null } },
+                                    { token: { $ne: '' } }
+                                ]
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: '$token',
+                                doc: { $first: '$$ROOT' }
+                            }
+                        },
+                        {
+                            $replaceRoot: {
+                                newRoot: '$doc'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$User',
+                                preserveNullAndEmptyArrays: true
+                            }
                         }
-                    } else {
-                        continue;
+                    ]);
+                    if (deviceToken.length > 0 ) {
+                        const workThreadModel: WorkerThread = new WorkerThread();
+                        workThreadModel.theThings = new ObjectID(result.id);
+                        workThreadModel.sending = deviceToken.length;
+                        workThreadModel.sended = 0;
+                        workThreadModel.voteId = [new ObjectID(result.id)];
+                        workThreadModel.type = NotiTypeAction['vote_event_noti'];
+                        workThreadModel.active = false;
+                        await this.workerThreadService.create(workThreadModel);
+                        const chunks: number[][] = await checkify(deviceToken, Number(process.env.WORKER_THREAD_JOBS));
+                        chunks.forEach((item,i) => {
+                            const workerThread = new Worker(process.env.WORKER_THREAD_PATH);
+                            const messagePayload = {
+                                'title': title,
+                                'body': detail,
+                                'image': signUrl,
+                                'type': 'VOTE_EVENT_NOTI',
+                                'link': process.env.APP_VOTE +`/event/${pageObjId}`,
+                                'token': item,
+                                // 'user': item['users']
+                            };
+                            
+                            workerThread.postMessage(messagePayload);
+                            workerThread.on('message', async (feedback:any) => {
+                                if(feedback.message === 'done') {
+                                    console.log(`Worker ${i} completed.`);
+                                }
+                            });
+                        });
+                    }
+
+                } else {
+                    // ถ้าเป็น false ส่ง noti เฉพาะบางคน
+                    const idxArr: any[] = [];
+                    console.log('pass2');
+                    const splitEligible:any[] = eligibleValue ? eligibleValue.split(',') : eligibleValue;
+                    if(splitEligible.length > 0) {
+                        for(const item of splitEligible) {
+                            const userObj: any = await this.userService.findOne({email: item});
+                            if(userObj) {
+                                 idxArr.push(new ObjectID(userObj.id));
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                    if(idxArr.length > 0){
+                        deviceToken = await this.deviceTokenService.aggregate(
+                            [
+                                {
+                                    $match: {
+                                        userId: { $in: idxArr},
+                                        token: { $ne: null }
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: 'User',
+                                        localField: 'userId',
+                                        foreignField: '_id',
+                                        as: 'User'
+                                    }
+                                },
+                                {
+                                    $unwind: {
+                                        path: '$User',
+                                        preserveNullAndEmptyArrays: true
+                                    }
+                                }
+                            ]
+                        );
                     }
                 }
-                const query = { _id: new ObjectID(result.assetId) };
-                const newValue = { $set: { expirationDate: null } };
-                await this.assetService.update(query, newValue);
-                const formatVoteItem: any = {};
-                if (stackVoteItem['VoteItem'].length > 0) {
-                    for (const data of stackVoteItem['VoteItem']) {
-                        formatVoteItem.ordering = data.ordering;
-                        formatVoteItem.titleItem = data.title;
-                        formatVoteItem.typeChoice = data.type;
-                        formatVoteItem.assetIdItem = data.assetId;
-                        formatVoteItem.coverPageURLItem = data.coverPageURL;
-                        formatVoteItem.voteChoice = stackVoteItem['VoteChoice'].shift();
+                if (deviceToken.length > 0) {
+                    for (let j = 0; j < deviceToken.length; j++) {
+                        if (deviceToken[0].User.subscribeNoti === true && deviceToken[0].User !== undefined && deviceToken[j].token !== undefined && deviceToken[j].token !== null && deviceToken[j].token !== '') {
+                            fireBaseToken.push(deviceToken[j].token);
+                        } else {
+                            continue;
+                        }
                     }
                 }
 
-                const response: any = {};
-                response.id = result.id;
-                response.title = result.title;
-                response.detail = result.detail;
-                response.assetId = result.assetId;
-                response.coverPageURL = result.coverPageURL;
-                response.s3CoverPageURL = result.s3CoverPageURL;
-                response.userId = result.userId;
-                response.approved = result.approved;
-                response.closed = result.closed;
-                response.minSupport = result.minSupport;
-                response.countSupport = result.countSupport;
-                response.supportDaysRange = result.supportDaysRange;
-                response.startSupportDatetime = result.startSupportDatetime;
-                response.endSupportDatetime = result.endSupportDatetime;
-                response.voteDaysRange = result.voteDaysRange;
-                response.startVoteDatetime = result.startVoteDatetime;
-                response.endVoteDatetime = result.endVoteDatetime;
-                response.approveDatetime = result.approveDatetime;
-                response.approveUsername = result.approveUsername;
-                response.updateDatetime = result.updateDatetime;
-                response.hashTag = result.hashTag;
-                response.status = result.status;
-                response.createAsPage = result.createAsPage;
-                response.type = result.type;
-                response.pin = result.pin;
-                response.showVoterName = result.showVoterName;
-                response.showVoteResult = result.showVoteResult;
-                response.voteItems = formatVoteItem;
-                response.service = votingEventRequest.service;
-                response.hide = result.hide;
-                const successResponse = ResponseUtil.getSuccessResponse('Successfully create Voting Event.', response);
-                return res.status(200).send(successResponse);
+                if (fireBaseToken.length > 0 ) {
+                    const token = fireBaseToken.filter(
+                        (
+                            element, index
+                        ) => 
+                            {
+                                return fireBaseToken.indexOf(element) === index;
+                            }
+                    );
+                    const workThreadModel: WorkerThread = new WorkerThread();
+                    workThreadModel.theThings = new ObjectID(result.id);
+                    workThreadModel.sending = token.length;
+                    workThreadModel.sended = 0;
+                    workThreadModel.voteId = [new ObjectID(result.id)];
+                    workThreadModel.type = NotiTypeAction['vote_event_noti'];
+                    workThreadModel.active = false;
+                    await this.workerThreadService.create(workThreadModel);
+                    const chunks: number[][] = await checkify(token, Number(process.env.WORKER_THREAD_JOBS));
+                    chunks.forEach((item,i) => {
+                        const workerThread = new Worker(process.env.WORKER_THREAD_PATH);
+                        const messagePayload = {
+                            'title': title,
+                            'body': detail,
+                            'image': signUrl,
+                            'type': NotiTypeAction['vote_event_noti'],
+                            'link': process.env.APP_VOTE +`/event/${pageObjId}`,
+                            'token': item,
+                            // 'user': item['users']
+                        };
+                        
+                        workerThread.postMessage(messagePayload);
+                        workerThread.on('message', async (feedback:any) => {
+                            if(feedback.message === 'done') {
+                                console.log(`Worker ${i} completed.`);
+                            }
+                        });
+                    });
+                }
+            }
+
+            const stackVoteItem: any = {
+                'VoteItem': [],
+                'VoteChoice': []
+            };
+            if (result) {
+                // const stackVoteItems:any = {};
+                if (votingEventRequest.voteItem.length > 0) {
+                    for (const voteItems of votingEventRequest.voteItem) {
+                        if (voteItems.titleItem !== '') {
+                            const voteItem = new VoteItemModel();
+                            voteItem.votingId = result.id;
+                            voteItem.ordering = voteItems.ordering;
+                            voteItem.type = voteItems.typeChoice;
+                            voteItem.title = voteItems.titleItem;
+                            voteItem.assetId = voteItems.assetIdItem;
+                            voteItem.coverPageURL = voteItems.coverPageURLItem;
+                            voteItem.s3CoverPageURL = voteItems.s3CoverPageURLItem;
+                            voteItem.userId = userObjId;
+                            voteItem.pageId = new ObjectID(pageObjId);
+                            const createVoteItem = await this.voteItemService.create(voteItem);
+                            if (createVoteItem) {
+                                stackVoteItem['VoteItem'].push(createVoteItem);
+                                const createdVoteChoice = await this.CreateVoteChoice(createVoteItem, voteItems, userObjId, pageObjId);
+                                stackVoteItem['VoteChoice'].push(createdVoteChoice);
+                            }
+                        } else {
+                            continue;
+                        }
+                    }
+                    const query = { _id: new ObjectID(result.assetId) };
+                    const newValue = { $set: { expirationDate: null } };
+                    await this.assetService.update(query, newValue);
+                    const formatVoteItem: any = {};
+                    if (stackVoteItem['VoteItem'].length > 0) {
+                        for (const data of stackVoteItem['VoteItem']) {
+                            formatVoteItem.ordering = data.ordering;
+                            formatVoteItem.titleItem = data.title;
+                            formatVoteItem.typeChoice = data.type;
+                            formatVoteItem.assetIdItem = data.assetId;
+                            formatVoteItem.coverPageURLItem = data.coverPageURL;
+                            formatVoteItem.voteChoice = stackVoteItem['VoteChoice'].shift();
+                        }
+                    }
+    
+                    const response: any = {};
+                    response.id = result.id;
+                    response.title = result.title;
+                    response.detail = result.detail;
+                    response.assetId = result.assetId;
+                    response.coverPageURL = result.coverPageURL;
+                    response.s3CoverPageURL = result.s3CoverPageURL;
+                    response.userId = result.userId;
+                    response.approved = result.approved;
+                    response.closed = result.closed;
+                    response.minSupport = result.minSupport;
+                    response.countSupport = result.countSupport;
+                    response.supportDaysRange = result.supportDaysRange;
+                    response.startSupportDatetime = result.startSupportDatetime;
+                    response.endSupportDatetime = result.endSupportDatetime;
+                    response.voteDaysRange = result.voteDaysRange;
+                    response.startVoteDatetime = result.startVoteDatetime;
+                    response.endVoteDatetime = result.endVoteDatetime;
+                    response.approveDatetime = result.approveDatetime;
+                    response.approveUsername = result.approveUsername;
+                    response.updateDatetime = result.updateDatetime;
+                    response.hashTag = result.hashTag;
+                    response.status = result.status;
+                    response.createAsPage = result.createAsPage;
+                    response.type = result.type;
+                    response.pin = result.pin;
+                    response.showVoterName = result.showVoterName;
+                    response.showVoteResult = result.showVoteResult;
+                    // response.voteItems = formatVoteItem;
+                    response.service = votingEventRequest.service;
+                    response.hide = result.hide;
+                    const successResponse = ResponseUtil.getSuccessResponse('Successfully create Voting Event.', response);
+                    return res.status(200).send(successResponse);
+                } else {
+                    const errorResponse = ResponseUtil.getErrorResponse('Cannot create a voting Item, Vote Choice is empty.', undefined);
+                    return res.status(400).send(errorResponse);
+                }
             } else {
-                const errorResponse = ResponseUtil.getErrorResponse('Cannot create a voting Item, Vote Choice is empty.', undefined);
+                const errorResponse = ResponseUtil.getErrorResponse('Cannot create a voting event.', undefined);
                 return res.status(400).send(errorResponse);
             }
-        } else {
-            const errorResponse = ResponseUtil.getErrorResponse('Cannot create a voting event.', undefined);
-            return res.status(400).send(errorResponse);
         }
+
     }
 
     // User vote

@@ -4,8 +4,8 @@ import { ObjectID } from 'mongodb';
 import { BaseModel } from './BaseModel';
 import moment from 'moment';
 
-@Entity('WorkerThread')
-export class WorkerThread extends BaseModel {
+@Entity('CacheEntity')
+export class Cache extends BaseModel {
 
     @ObjectIdColumn({ name: '_id' })
     @IsNotEmpty()
@@ -13,22 +13,16 @@ export class WorkerThread extends BaseModel {
     public id: ObjectID;
 
     @Column({ name: 'theThings'})
-    public theThings: any;
+    public theThings: ObjectID;
+
+    @Column({ name: 'userIds'})
+    public userIds: ObjectID[];
 
     @Column({ name: 'sending'})
     public sending: number;
 
     @Column({ name: 'sended'})
     public sended: number;
-
-    @Column({ name: 'type'})
-    public type: string;
-
-    @Column({ name: 'postIds'})
-    public postIds: any[];
-
-    @Column({ name: 'voteId'})
-    public voteId: any[];
     
     @Column({ name: 'active'})
     public active: boolean;

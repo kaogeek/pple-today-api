@@ -9,14 +9,14 @@ import 'reflect-metadata';
 import { IsNotEmpty, IsString, IsArray, IsBoolean } from 'class-validator';
 import { ObjectID } from 'typeorm';
 
-export class IsRead {
+export class IsReadVote {
     @IsNotEmpty({ message: 'userId is required' })
     @IsString()
     public userId: ObjectID;
 
-    @IsNotEmpty({ message: 'postId is required' })
+    @IsNotEmpty({ message: 'voteId is required' })
     @IsArray()
-    public postId: string;
+    public voteId: string;
 
     @IsNotEmpty({ message: 'isRead is required' })
     @IsBoolean()

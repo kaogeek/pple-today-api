@@ -16,7 +16,16 @@ export class IsReadPost extends BaseModel {
     public userId: ObjectID;
 
     @Column({ name: 'postId' })
-    public postId: any;
+    public postId: ObjectID;
+
+    @Column({ name: 'voteId'})
+    public voteId: ObjectID;
+
+    @Column({ name: 'device'})
+    public device: string;
+
+    @Column({ name: 'action'})
+    public action: string;
 
     @Column({ name: 'isRead' })
     public isRead: boolean;

@@ -60,5 +60,6 @@ export const Engage_action: string[] = [
     'VOTE',
     'BIRTHDAY',
     'LINE_NOTI',
-    'PPLE_NEWS'
+    'PPLE_NEWS',
+    'VOTE_EVENT_NOTI'
 ];

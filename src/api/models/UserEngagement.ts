@@ -61,6 +61,12 @@ export class UserEngagement extends BaseModel {
     @Column({ name: 'isReadId'})
     public isReadId: ObjectID;
 
+    @Column({ name: 'commentId'})
+    public commentId: ObjectID;
+
+    @Column({ name: 'likeId'})
+    public likeId: ObjectID;
+
     @BeforeInsert()
     public createDetails(): any {
         this.createdDate = moment().toDate();

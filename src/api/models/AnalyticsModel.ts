@@ -42,6 +42,12 @@ export class AnalyticsModel extends BaseModel {
   @Column({ name: 'expiredDate' })
   public expiredDate: any;
 
+  @Column({ name: 'type'})
+  public type: string;
+
+  @Column({ name: 'theThings'})
+  public theThings: ObjectID;
+
   @BeforeInsert()
   public createDetails(): any {
     this.createdDate = moment().toDate();

@@ -472,10 +472,10 @@ export class UserNotificationController {
             }
         ]);
         const notiResp = await this.parseNotificationsToResponses(notifications);
-        const query = { toUser: userObjId, _id: { $nin: stackIds } };
-        const newValues = { $set: { isRead: true } };
-        const updateReadNoti = await this.notificationService.updateMany(query, newValues);
-        if (notifications && updateReadNoti) {
+        // const query = { toUser: userObjId, _id: { $nin: stackIds } };
+        // const newValues = { $set: { isRead: true } };
+        // const updateReadNoti = await this.notificationService.updateMany(query, newValues);
+        if (notifications) {
             const successResponse = ResponseUtil.getSuccessResponse('Successfully search UserNotifications', notiResp, notiResp.length, pageObjectives);
             return res.status(200).send(successResponse);
         } else {

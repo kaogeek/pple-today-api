@@ -6,21 +6,52 @@
  */
 
 import 'reflect-metadata';
-
+import {IsBoolean, IsNotEmpty, IsString, IsNumber, Min} from 'class-validator';
 export class UserEngagementRequest {
  
     public contentId: string;
     public contentType: string;
     public ip: string;
+
+    @IsNotEmpty()
+    @IsString()
     public device: string;
+
+    @IsNotEmpty()
+    @IsString()
     public userId: string;
+    
     public clientId: string;
+
+    @IsNotEmpty()
+    @IsBoolean()
     public isFirst: boolean;
-    public action: string;  
-    public reference: string;  
+
+    @IsNotEmpty()
+    @IsString()
+    public action: string;
+    
+    @IsNotEmpty()
+    @IsString()
+    public reference: string;
+
     public likeAsPage: number;  
+
+    @IsNotEmpty()
+    @IsNumber()
+    @Min(1)
     public point: number;
+
+    @IsString()
     public postId: string;
+
+    @IsString()
     public voteId: string;
+
+    @IsString()
     public isReadId: string;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    public isRead: boolean;
 }
