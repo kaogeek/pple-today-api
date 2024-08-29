@@ -140,13 +140,9 @@ export async function randomVoteOneChoice(thingId: string, userId:any): Promise<
 
     const voteEvent:any = await votingEventService.findOne({_id: new ObjectID(thingId)});
     const voteItem:any = await voteItemService.find({votingId: voteEvent.id, type: 'single'});
-    const randChoice: any[] = [];
+    const randChoice: any[] = voteItem;
     let voteChoice:any = undefined;
-    if(voteItem.length > 0) {
-        for(const item of voteItem) {
-            randChoice.push(item);
-        }
-    }
+
     const votedRepository = getCustomRepository(VotedRepository);
     const votedService = new VotedService(votedRepository);
     const voted:any = new Voted();
@@ -157,12 +153,11 @@ export async function randomVoteOneChoice(thingId: string, userId:any): Promise<
     }
 
     voteChoice = await voteChoiceService.findOne({voteItemId: new ObjectID(randChoice[getRand].id)});
-
     voted.votingId = voteEvent.id;
     voted.userId = new ObjectID(userId);
     voted.pageId = null;
     voted.answer = voteChoice.title;
-    voted.voteItemId = new ObjectID(randChoice[getRand]._id);
+    voted.voteItemId = new ObjectID(randChoice[getRand].id);
     voted.voteChoiceId = voteChoice.id;
     return await votedService.create(voted);
 }
@@ -209,7 +204,7 @@ export async function randomVoteMultiChoice(thingId: string, userId:any): Promis
             voted.userId = new ObjectID(userId);
             voted.pageId = null;
             voted.answer = voteChoice[i].title;
-            voted.voteItemId = new ObjectID(randChoice[getRand]._id);
+            voted.voteItemId = new ObjectID(randChoice[getRand].id);
             voted.voteChoiceId = voteChoice.id;
             const create = await votedService.create(voted);
             result.push(create);
@@ -248,7 +243,7 @@ export async function randomVoteTextChoice(thingId: string, userId:any): Promise
     voted.userId = new ObjectID(userId);
     voted.pageId = null;
     voted.answer = textRand[getRandText];
-    voted.voteItemId = new ObjectID(randChoice[getRand]._id);
+    voted.voteItemId = new ObjectID(randChoice[getRand].id);
     voted.voteChoiceId = null;
     const create:any = await votedService.create(voted);
     return create;

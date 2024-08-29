@@ -35,114 +35,45 @@ export class AdminDashBoardController {
                 },
                 {
                     $lookup: {
-                        from: 'UserEngagement',
-                        let: { postObjIds : '$postIds' },
-                        pipeline: [
+                        from:'Posts',
+                        let: {postIds: '$postIds'},
+                        pipeline:[
                             {
                                 $match:{
                                     $expr:{
-                                        $in:['$postId','$$postObjIds']
+                                        $in:['$_id','$$postIds']
                                     }
                                 }
                             },
                             {
-                                $match: {
-                                    action: NotiTypeAction['line_noti']
-                                }
-                            },
-                            {
                                 $lookup:{
-                                    from:'User',
-                                    let: {userId: '$userId'},
+                                    from:'UserEngagement',
+                                    let:{id:'$_id'},
                                     pipeline:[
                                         {
                                             $match:{
                                                 $expr:{
-                                                    $eq:['$$userId','$_id']
-                                                }
-                                            }
-                                        },
-                                        {
-                                            $project: {
-                                                _id:1,
-                                                firstName:1,
-                                                lastName:1,
-                                                displayName:1,
-                                                uniqueId:1
-                                            }
-                                        }
-                                    ],
-                                    as:'user'
-                                }
-                            },
-                            {
-                                $lookup:{
-                                    from:'UserLike',
-                                    let: { likeId: '$likeId'},
-                                    pipeline: [
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$likeId','$_id']
+                                                    $eq:['$$id','$postId']
                                                 }
                                             }
                                         }
                                     ],
-                                    as:'userLike'
+                                    as:'userEngagement'
                                 }
                             },
                             {
-                                $lookup: {
-                                    from: 'PostsComment',
-                                    let: { commentId: '$commentId'},
-                                    pipeline: [
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$commentId','$_id']
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as: 'postsComment'
+                                $project: {
+                                    _id:1,
+                                    pageId:1,
+                                    title:1,
+                                    detail:1,
+                                    type:1,
+                                    ownerUser:1,
+                                    userEngagement:1
                                 }
                             },
-                            {
-                                $lookup:{
-                                    from: 'IsReadPost',
-                                    let: { isReadId: '$isReadId'},
-                                    pipeline: [
-                                        {
-                                            $match: {
-                                                $expr:{
-                                                    $eq:['$$isReadId','$_id']
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as:'isReadPost'
-                                }
-                            },
-                            {
-                                $unwind: {
-                                    path:'$postsComment',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            },
-                            {
-                                $unwind:{
-                                    path:'$userLike',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            },
-                            {
-                                $unwind:{
-                                    path:'$user',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            }
                         ],
-                        as:'userEngagement'
+                        as:'posts'
                     }
                 },
                 {
@@ -163,114 +94,45 @@ export class AdminDashBoardController {
                 },
                 {
                     $lookup: {
-                        from: 'UserEngagement',
-                        let: { postObjIds : '$postIds' },
+                        from:'Posts',
+                        let: {postIds:'$postIds'},
                         pipeline: [
                             {
-                                $match:{
-                                    $expr:{
-                                        $in:['$postId','$$postObjIds']
+                                $match: {
+                                    $expr: {
+                                        $in:['$_id','$$postIds']
                                     }
                                 }
                             },
                             {
-                                $match: {
-                                    action:NotiTypeAction['pple_news_noti']
-                                }
-                            },
-                            {
-                                $lookup:{
-                                    from:'User',
-                                    let: {userId: '$userId'},
+                                $lookup: {
+                                    from:'UserEngagement',
+                                    let: {id: '$_id'},
                                     pipeline:[
                                         {
                                             $match:{
                                                 $expr:{
-                                                    $eq:['$$userId','$_id']
-                                                }
-                                            }
-                                        },
-                                        {
-                                            $project: {
-                                                _id:1,
-                                                firstName:1,
-                                                lastName:1,
-                                                displayName:1,
-                                                uniqueId:1
-                                            }
-                                        }
-                                    ],
-                                    as:'user'
-                                }
-                            },
-                            {
-                                $lookup:{
-                                    from:'UserLike',
-                                    let: { likeId: '$likeId'},
-                                    pipeline: [
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$likeId','$_id']
+                                                    $eq:['$$id','$postId']
                                                 }
                                             }
                                         }
                                     ],
-                                    as:'userLike'
+                                    as:'userEngagement'
                                 }
                             },
                             {
-                                $lookup: {
-                                    from: 'PostsComment',
-                                    let: { commentId: '$commentId'},
-                                    pipeline: [
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$commentId','$_id']
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as: 'postsComment'
+                                $project: {
+                                    _id:1,
+                                    pageId:1,
+                                    title:1,
+                                    detail:1,
+                                    type:1,
+                                    ownerUser:1,
+                                    userEngagement:1,
                                 }
                             },
-                            {
-                                $lookup:{
-                                    from: 'IsReadPost',
-                                    let: { isReadId: '$isReadId'},
-                                    pipeline: [
-                                        {
-                                            $match: {
-                                                $expr:{
-                                                    $eq:['$$isReadId','$_id']
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as:'isReadPost'
-                                }
-                            },
-                            {
-                                $unwind: {
-                                    path:'$postsComment',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            },
-                            {
-                                $unwind:{
-                                    path:'$userLike',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            },
-                            {
-                                $unwind:{
-                                    path:'$user',
-                                    preserveNullAndEmptyArrays: true
-                                }
-                            }
                         ],
-                        as:'userEngagement'
+                        as: 'posts'
                     }
                 },
                 {
@@ -291,65 +153,50 @@ export class AdminDashBoardController {
                 },
                 {
                     $lookup: {
-                        from: 'UserEngagement',
-                        let: { votingObjId : '$votingId' },
+                        from:'VotingEvent',
+                        let: {votingId: '$votingId'},
                         pipeline: [
                             {
-                                $match:{
-                                    $expr:{
-                                        $in:['$votingId','$$votingObjId']
+                                $match: {
+                                    $expr: {
+                                        $in:['$_id','$$votingId']
                                     }
                                 }
                             },
                             {
-                                $match:{
-                                    action: NotiTypeAction['vote_event_noti'],
-                                }
-                            },
-                            {
-                                $lookup:{
-                                    from:'User',
-                                    let: {userId: '$userId'},
+                                $lookup: {
+                                    from:'UserEngagement',
+                                    let:{id:'$_id'},
                                     pipeline:[
                                         {
                                             $match:{
                                                 $expr:{
-                                                    $eq:['$$userId','$_id']
+                                                    $eq:['$$id','$votingId']
                                                 }
                                             }
                                         },
                                         {
-                                            $project: {
-                                                _id:1,
-                                                firstName:1,
-                                                lastName:1,
-                                                displayName:1,
-                                                uniqueId:1
+                                            $lookup:{
+                                                from:'VoteItem',
+                                                let:{voteItemId:'$voteItemId'},
+                                                pipeline:[
+                                                    {
+                                                        $match:{
+                                                            $expr:{
+                                                                $eq:['$$voteItemId','$_id']
+                                                            }
+                                                        }
+                                                    }
+                                                ],
+                                                as:'voteItem'
                                             }
                                         }
                                     ],
-                                    as:'user'
+                                    as:'userEngagement'
                                 }
-                            },
-                            {
-                                $lookup:{
-                                    from: 'IsReadPost',
-                                    let: { isReadId: '$isReadId'},
-                                    pipeline: [
-                                        {
-                                            $match: {
-                                                $expr:{
-                                                    $eq:['$$isReadId','$_id']
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    as:'isReadPost'
-                                }
-                            },
-
+                            }
                         ],
-                        as:'userEngagement'
+                        as:' votingEvent'
                     }
                 },
                 {
@@ -359,79 +206,16 @@ export class AdminDashBoardController {
                 },
             ]
         );
-        let lLineNoti = 0;
-        let cLineNoti = 0;
-        let rLineNoti = 0;
-        if(aggsLineNoti.length > 0) {
-            for(const item of aggsLineNoti[0].userEngagement) {
-                if (item.likeId !== null) {
-                    lLineNoti += 1;
-                }
-
-                if (item.commentId !== null) {
-                    cLineNoti += 1;
-                }
-
-                if (item.isReadId !== null) {
-                    rLineNoti += 1;
-                }
-
-            }
-        }
-
-        let ppleLikeNoti = 0;
-        let ppleCommentNoti = 0;
-        let ppleeReadNoti = 0;
-        if(aggsPpleNoti.length > 0) {
-            for(const item of aggsPpleNoti[0].userEngagement) {
-                if (item.likeId !== null) {
-                    ppleLikeNoti += 1;
-                }
-
-                if (item.commentId !== null) {
-                    ppleCommentNoti += 1;
-                }
-
-                if (item.isReadId !== null) {
-                    ppleeReadNoti += 1;
-                }
-
-            }
-        }
-
-        let voteNoti = 0;
-        let voteReadNoti = 0;
-
-        if(aggsVoteNoti.length > 0) {
-            for(const item of aggsVoteNoti[0].userEngagement) {
-                if(item.voteNoti !== null) {
-                    voteNoti += 1;
-                }
-
-                if(item.isReadId !== null) {
-                    voteReadNoti += 1;
-                }
-
-            }
-        }
 
         const result:any = {
             'LINE_NOTI' : {
                 'data': aggsLineNoti,
-                'like_line_noti_count': lLineNoti,
-                'comment_line_noti_count': cLineNoti,
-                'read_line_noti_count': rLineNoti,
             },
             'PPLE_NEWS': {
                 'data': aggsPpleNoti,
-                'like_pple_noti_count': ppleLikeNoti,
-                'comment_pple_noti_count': ppleCommentNoti,
-                'read_pple_noti_count': ppleeReadNoti,
             },
             'VOTE_EVENT_NOTI': {
                 'data': aggsVoteNoti,
-                'vote_noti_count': voteNoti,
-                'read_noti_count': voteReadNoti,
             }
         };
         const successResponse = ResponseUtil.getSuccessResponse('DashBoard.', result);

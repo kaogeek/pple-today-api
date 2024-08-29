@@ -711,7 +711,6 @@ export class AdminVotedController {
             const voteChoice:any = await randomVoteOneChoice(new ObjectID(wTVoteNoti[0].votingId[0]),userIds);
             const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
             if(voteChoice !== undefined) {
-                console.log('pass1');
                 for(let g=0;g<=10;g++) {
                     const clientId = req.headers['client-id']; 
                     const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
