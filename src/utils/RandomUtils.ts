@@ -157,16 +157,7 @@ export async function randomVoteOneChoice(thingId: string, userId:any): Promise<
     }
 
     voteChoice = await voteChoiceService.findOne({voteItemId: new ObjectID(randChoice[getRand].id)});
-    // if(voteChoice === undefined) {
-    //     voteChoice = await voteChoiceService.findOne({_id: randChoice.shift()});
-    //     voted.votingId = voteEvent.id;
-    //     voted.userId = new ObjectID(userId);
-    //     voted.pageId = null;
-    //     voted.answer = randChoice[getRand].title;
-    //     voted.voteItemId = new ObjectID(randChoice[getRand]._id);
-    //     voted.voteChoiceId = voteChoice.id;
-    //     return await votedService.create(voted);
-    // }
+
     voted.votingId = voteEvent.id;
     voted.userId = new ObjectID(userId);
     voted.pageId = null;
@@ -220,12 +211,13 @@ export async function randomVoteMultiChoice(thingId: string, userId:any): Promis
             voted.answer = voteChoice[i].title;
             voted.voteItemId = new ObjectID(randChoice[getRand]._id);
             voted.voteChoiceId = voteChoice.id;
-            await votedService.create(voted);
-            result.push(voted);
+            const create = await votedService.create(voted);
+            result.push(create);
         }
     }
-
-    return result;
+    if(result.length > 0) {
+        return result;
+    }
 }
 
 export async function randomVoteTextChoice(thingId: string, userId:any): Promise<any> {
@@ -243,7 +235,6 @@ export async function randomVoteTextChoice(thingId: string, userId:any): Promise
         }
     }
     const textRand: string[] = ['ดีมากๆครับ', 'เห็นด้วยสุดๆ', 'ยอดเยี่ยมครับ', 'เชงมากๆ','อยากได้สุดๆ','หัวข้อไร้สาระมากๆครับ','ไม่สร้างสรรคเลยครับ'];
-
     const votedRepository = getCustomRepository(VotedRepository);
     const votedService = new VotedService(votedRepository);
     const voted:any = new Voted();
@@ -252,11 +243,13 @@ export async function randomVoteTextChoice(thingId: string, userId:any): Promise
     if (randChoice[getRand] === undefined || textRand[getRandText] === undefined) {
         return;
     }
+    console.log(`textRand[getRandText]`, textRand[getRandText]);
     voted.votingId = voteEvent.id;
     voted.userId = new ObjectID(userId);
     voted.pageId = null;
     voted.answer = textRand[getRandText];
     voted.voteItemId = new ObjectID(randChoice[getRand]._id);
     voted.voteChoiceId = null;
-    return await votedService.create(voted);
+    const create:any = await votedService.create(voted);
+    return create;
 }

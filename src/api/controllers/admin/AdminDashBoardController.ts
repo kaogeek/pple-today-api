@@ -24,6 +24,7 @@ export class AdminDashBoardController {
     public async engagementDashboard(@Body({ validate: true }) search: DashBoardRequest, @Res() res: any, @Req() req: any): Promise<any>{
         // lineNewsWeekId
         // the_things
+        console.log('search',search);
         const aggsLineNoti:any = await this.workerThreadService.aggregate(
             [
                 {
@@ -33,13 +34,407 @@ export class AdminDashBoardController {
                     }
                 },
                 {
+                    $lookup: {
+                        from: 'UserEngagement',
+                        let: { postObjIds : '$postIds' },
+                        pipeline: [
+                            {
+                                $match:{
+                                    $expr:{
+                                        $in:['$postId','$$postObjIds']
+                                    }
+                                }
+                            },
+                            {
+                                $match: {
+                                    action: NotiTypeAction['line_noti']
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'User',
+                                    let: {userId: '$userId'},
+                                    pipeline:[
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$userId','$_id']
+                                                }
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id:1,
+                                                firstName:1,
+                                                lastName:1,
+                                                displayName:1,
+                                                uniqueId:1
+                                            }
+                                        }
+                                    ],
+                                    as:'user'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'UserLike',
+                                    let: { likeId: '$likeId'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$likeId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'userLike'
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: 'PostsComment',
+                                    let: { commentId: '$commentId'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$commentId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as: 'postsComment'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from: 'IsReadPost',
+                                    let: { isReadId: '$isReadId'},
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr:{
+                                                    $eq:['$$isReadId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'isReadPost'
+                                }
+                            },
+                            {
+                                $unwind: {
+                                    path:'$postsComment',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $unwind:{
+                                    path:'$userLike',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $unwind:{
+                                    path:'$user',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            }
+                        ],
+                        as:'userEngagement'
+                    }
+                },
+                {
                     $sort: {
                         createdDate: -1
                     }
                 },
             ]
         );
-        const successResponse = ResponseUtil.getSuccessResponse('DashBoard.', aggsLineNoti);
+
+        const aggsPpleNoti:any = await this.workerThreadService.aggregate(
+            [
+                {
+                    $match: {
+                        createdDate: { $gte: new Date(search.createDatePpleNews), $lte: new Date(search.endDatePpleNews) },
+                        type: NotiTypeAction['pple_news_noti']
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'UserEngagement',
+                        let: { postObjIds : '$postIds' },
+                        pipeline: [
+                            {
+                                $match:{
+                                    $expr:{
+                                        $in:['$postId','$$postObjIds']
+                                    }
+                                }
+                            },
+                            {
+                                $match: {
+                                    action:NotiTypeAction['pple_news_noti']
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'User',
+                                    let: {userId: '$userId'},
+                                    pipeline:[
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$userId','$_id']
+                                                }
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id:1,
+                                                firstName:1,
+                                                lastName:1,
+                                                displayName:1,
+                                                uniqueId:1
+                                            }
+                                        }
+                                    ],
+                                    as:'user'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'UserLike',
+                                    let: { likeId: '$likeId'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$likeId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'userLike'
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: 'PostsComment',
+                                    let: { commentId: '$commentId'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$commentId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as: 'postsComment'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from: 'IsReadPost',
+                                    let: { isReadId: '$isReadId'},
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr:{
+                                                    $eq:['$$isReadId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'isReadPost'
+                                }
+                            },
+                            {
+                                $unwind: {
+                                    path:'$postsComment',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $unwind:{
+                                    path:'$userLike',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $unwind:{
+                                    path:'$user',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            }
+                        ],
+                        as:'userEngagement'
+                    }
+                },
+                {
+                    $sort: {
+                        createdDate: -1
+                    }
+                },
+            ]
+        );
+
+        const aggsVoteNoti:any = await this.workerThreadService.aggregate(
+            [
+                {
+                    $match: {
+                        createdDate: { $gte: new Date(search.createDatePpleNews), $lte: new Date(search.endDatePpleNews) },
+                        type: NotiTypeAction['vote_event_noti']
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'UserEngagement',
+                        let: { votingObjId : '$votingId' },
+                        pipeline: [
+                            {
+                                $match:{
+                                    $expr:{
+                                        $in:['$votingId','$$votingObjId']
+                                    }
+                                }
+                            },
+                            {
+                                $match:{
+                                    action: NotiTypeAction['vote_event_noti'],
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'User',
+                                    let: {userId: '$userId'},
+                                    pipeline:[
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $eq:['$$userId','$_id']
+                                                }
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id:1,
+                                                firstName:1,
+                                                lastName:1,
+                                                displayName:1,
+                                                uniqueId:1
+                                            }
+                                        }
+                                    ],
+                                    as:'user'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from: 'IsReadPost',
+                                    let: { isReadId: '$isReadId'},
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr:{
+                                                    $eq:['$$isReadId','$_id']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'isReadPost'
+                                }
+                            },
+
+                        ],
+                        as:'userEngagement'
+                    }
+                },
+                {
+                    $sort: {
+                        createdDate: -1
+                    }
+                },
+            ]
+        );
+        let lLineNoti = 0;
+        let cLineNoti = 0;
+        let rLineNoti = 0;
+        if(aggsLineNoti.length > 0) {
+            for(const item of aggsLineNoti[0].userEngagement) {
+                if (item.likeId !== null) {
+                    lLineNoti += 1;
+                }
+
+                if (item.commentId !== null) {
+                    cLineNoti += 1;
+                }
+
+                if (item.isReadId !== null) {
+                    rLineNoti += 1;
+                }
+
+            }
+        }
+
+        let ppleLikeNoti = 0;
+        let ppleCommentNoti = 0;
+        let ppleeReadNoti = 0;
+        if(aggsPpleNoti.length > 0) {
+            for(const item of aggsPpleNoti[0].userEngagement) {
+                if (item.likeId !== null) {
+                    ppleLikeNoti += 1;
+                }
+
+                if (item.commentId !== null) {
+                    ppleCommentNoti += 1;
+                }
+
+                if (item.isReadId !== null) {
+                    ppleeReadNoti += 1;
+                }
+
+            }
+        }
+
+        let voteNoti = 0;
+        let voteReadNoti = 0;
+
+        if(aggsVoteNoti.length > 0) {
+            for(const item of aggsVoteNoti[0].userEngagement) {
+                if(item.voteNoti !== null) {
+                    voteNoti += 1;
+                }
+
+                if(item.isReadId !== null) {
+                    voteReadNoti += 1;
+                }
+
+            }
+        }
+
+        const result:any = {
+            'LINE_NOTI' : {
+                'data': aggsLineNoti,
+                'like_line_noti_count': lLineNoti,
+                'comment_line_noti_count': cLineNoti,
+                'read_line_noti_count': rLineNoti,
+            },
+            'PPLE_NEWS': {
+                'data': aggsPpleNoti,
+                'like_pple_noti_count': ppleLikeNoti,
+                'comment_pple_noti_count': ppleCommentNoti,
+                'read_pple_noti_count': ppleeReadNoti,
+            },
+            'VOTE_EVENT_NOTI': {
+                'data': aggsVoteNoti,
+                'vote_noti_count': voteNoti,
+                'read_noti_count': voteReadNoti,
+            }
+        };
+        const successResponse = ResponseUtil.getSuccessResponse('DashBoard.', result);
         return res.status(200).send(successResponse);
     }
 

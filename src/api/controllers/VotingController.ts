@@ -6516,7 +6516,7 @@ export class VotingController {
                         workThreadModel.theThings = new ObjectID(result.id);
                         workThreadModel.sending = deviceToken.length;
                         workThreadModel.sended = 0;
-                        workThreadModel.voteId = [new ObjectID(result.id)];
+                        workThreadModel.votingId = [new ObjectID(result.id)];
                         workThreadModel.type = NotiTypeAction['vote_event_noti'];
                         workThreadModel.active = false;
                         await this.workerThreadService.create(workThreadModel);
@@ -6607,7 +6607,7 @@ export class VotingController {
                     workThreadModel.theThings = new ObjectID(result.id);
                     workThreadModel.sending = token.length;
                     workThreadModel.sended = 0;
-                    workThreadModel.voteId = [new ObjectID(result.id)];
+                    workThreadModel.votingId = [new ObjectID(result.id)];
                     workThreadModel.type = NotiTypeAction['vote_event_noti'];
                     workThreadModel.active = false;
                     await this.workerThreadService.create(workThreadModel);

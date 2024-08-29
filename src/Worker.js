@@ -95,14 +95,14 @@ parentPort.on('message', async (jobs) => {
                     }
                 };
                 if(jobs['token'] !== undefined && jobs['token'].length > 0) {
-                    // await firebase.messaging().sendMulticast(payload).then((res) => {
-                    //     if(res) {
-                    //         console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
-                    //         count += 1;
-                    //     }
-                    // }).catch((err) => {
-                    //     console.log('Err pple news event:',err.data);
-                    // })
+                    await firebase.messaging().sendMulticast(payload).then((res) => {
+                        if(res) {
+                            console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
+                            count += 1;
+                        }
+                    }).catch((err) => {
+                        console.log('Err pple news event:',err.data);
+                    })
                     const result = { message: 'done',total: jobs['token'].length, count: count};
                     parentPort.postMessage(result);
                 }
@@ -154,14 +154,14 @@ parentPort.on('message', async (jobs) => {
                     }
                 };
                 if(jobs['token'] !== undefined && jobs['token'].length > 0) {
-                    // await firebase.messaging().sendMulticast(payload).then((res) => {
-                    //     if(res) {
-                    //         console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
-                    //         count += 1;
-                    //     }
-                    // }).catch((err) => {
-                    //     console.log('Err vote event:',err.data);
-                    // })
+                    await firebase.messaging().sendMulticast(payload).then((res) => {
+                        if(res) {
+                            console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
+                            count += 1;
+                        }
+                    }).catch((err) => {
+                        console.log('Err vote event:',err.data);
+                    })
                     const result = { message: 'done',total: jobs['token'].length, count: count};
                     parentPort.postMessage(result);
                 }
@@ -183,7 +183,7 @@ parentPort.on('message', async (jobs) => {
         console.log('pass5');
         const result = { message: 'done', notification: jobs};
         parentPort.postMessage(result);
-    }  else if (jobs.type === 'CREATE_PPLE_NEWS_NOTI') {
+    }  else if (jobs.typeAdmin === 'CREATE_PPLE_NEWS_NOTI') {
         console.log('pass6');
         const result = { message: 'done', notification: jobs};
         parentPort.postMessage(result);

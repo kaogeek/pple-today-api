@@ -27,8 +27,8 @@ export class WorkerThread extends BaseModel {
     @Column({ name: 'postIds'})
     public postIds: any[];
 
-    @Column({ name: 'voteId'})
-    public voteId: any[];
+    @Column({ name: 'votingId'})
+    public votingId: any[];
     
     @Column({ name: 'active'})
     public active: boolean;

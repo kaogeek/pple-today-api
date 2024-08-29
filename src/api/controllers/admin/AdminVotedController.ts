@@ -22,9 +22,9 @@ import { UserEngagement } from '../../models/UserEngagement';
 // import { randomNotiEngageAction } from '../../../utils/RandomUtils';
 import { PostsService } from '../../services/PostsService';
 import { UserEngagementService } from '../../services/UserEngagementService';
-import { PageService } from '../../services/PageService';
 import { LineNewMovePartyService } from '../../services/LineNewMovePartyService';
 import { LineNewsWeekService } from '../../services/LineNewsWeekService';
+import { WorkerThreadService } from '../../services/WokerThreadService';
 import { 
     randomUser, 
     randomComment, 
@@ -48,10 +48,10 @@ export class AdminVotedController {
         private configService:ConfigService,
         private postsService:PostsService,
         private userEngagementService:UserEngagementService,
-        private pageService:PageService,
         private isReadPostService:IsReadPostService,
         private lineNewMovePartyService:LineNewMovePartyService,
-        private lineNewsWeekService:LineNewsWeekService
+        private lineNewsWeekService:LineNewsWeekService,
+        private workerThreadService:WorkerThreadService
     ) { }
 
     @Post('/all/search/')
@@ -678,8 +678,21 @@ export class AdminVotedController {
     @Get('/random')
     @Authorized('')
     public async getRandomEngagement(@Res() res: any, @Req() req: any): Promise<any> {
-        const pageIds:any = await this.pageService.aggregate([{$match:{isOfficial:true, banned:false}},{$sample: {size:1}}, {$project: {_id: 1}}]);
-        const postIds:any = await this.postsService.aggregate([{$match:{pageId: new ObjectID(pageIds[0]._id)}},{$sample:  {size:1}}, {$project: {_id:1}}]);
+        // wT = worker thread
+        // pple_news
+        const wTPpleNews:any = await this.workerThreadService.aggregate([{$match:{active:false, type: NotiTypeAction['pple_news_noti']}}, {$sample:{size:1}}]);
+        // line_noti
+        const postIdsLineNoti:ObjectID[] = [];
+        const wTLineNoti:any = await this.workerThreadService.aggregate([{$match:{active:false, type: NotiTypeAction['line_noti']}}, {$sample:{size:1}}]);
+        if(wTLineNoti.length > 0) {
+            for(const item of wTLineNoti[0].postIds) {
+                postIdsLineNoti.push(new ObjectID(item));
+            }
+        }
+        // vote_noti
+        const wTVoteNoti:any = await this.workerThreadService.aggregate([{$match:{active:false, type: NotiTypeAction['vote_event_noti']}}, {$sample:{size:1}}]);
+
+        const postIds:any = await this.postsService.aggregate([{$match:{_id: {$in: postIdsLineNoti}}},{$sample:  {size:1}}, {$project: {_id:1}}]);
         const lineNewsWeek:any = await this.lineNewsWeekService.findOne({active: true});
         const lineNewMp:any = await this.lineNewMovePartyService.findOne({lineNewsWeekId: lineNewsWeek.id});
         const arrPostObjId:any = [];
@@ -688,93 +701,103 @@ export class AdminVotedController {
                 arrPostObjId.push(new ObjectID(item));
             }
         }
-        console.log('arrPostObjId',arrPostObjId);
-        const postIdsLineNoti:any = await this.postsService.aggregate(
-            [
-                {
-                    $match: {
-                        _id: {$in: arrPostObjId},
-                    }
-                },
-                {
-                    $sample: {size: 1}
-                }
-            ]
-        );
-        console.log('postIdsLineNoti', postIdsLineNoti);
-        const voteIds:any = await this.votingEventService.aggregate([{$sample: {size:1}}, {$project:{_id: 1}}]);
         if(postIds.length === 0) {
             const errorResponse = ResponseUtil.getErrorResponse('get Random Engagement.', undefined);
             return res.status(400).send(errorResponse);
         }
         // read vote_event_noti vote one choice.
-        for(let g=0;g<=10;g++) {
+        if(wTVoteNoti.length > 0) {
             const userIds:any = await randomUser();
+            const voteChoice:any = await randomVoteOneChoice(new ObjectID(wTVoteNoti[0].votingId[0]),userIds);
             const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['vote_event_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = '';
-            userEngage.voteId = new ObjectID(voteIds[0]._id);
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
-            await randomVoteOneChoice(new ObjectID(voteIds[0]._id),userIds);
+            if(voteChoice !== undefined) {
+                console.log('pass1');
+                for(let g=0;g<=10;g++) {
+                    const clientId = req.headers['client-id']; 
+                    const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                    const userEngage:any = new UserEngagement();
+                    userEngage.clientId = clientId;
+                    userEngage.ip = ipAddress; 
+                    userEngage.device = 'tester_dev';
+                    userEngage.userId = userIds;
+                    userEngage.contentId = 'tester_dev';
+                    userEngage.contentType = 'tester_dev';
+                    userEngage.action = NotiTypeAction['vote_event_noti'];
+                    userEngage.reference = 'tester_dev';
+                    userEngage.point = Math.random() * 10 + 1;
+                    userEngage.postId = '';
+                    userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
+                    userEngage.voteItemId = voteChoice.voteItemId;
+                    userEngage.voteChoiceId = voteChoice.voteChoiceId;
+                    userEngage.voteId = voteChoice.id;
+                    userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
+                    await this.userEngagementService.create(userEngage);
+                }
+            }
         }
 
         // read vote_event_noti vote multi choice.
-        for(let h=0; h<=10; h++) {
-            const userIds:any = await randomUser();
-            const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['vote_event_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = '';
-            userEngage.voteId = new ObjectID(voteIds[0]._id);
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
-            await randomVoteMultiChoice(new ObjectID(voteIds[0]._id),userIds);
+        if(wTVoteNoti.length > 0) {
+            for(let h=0; h<=10; h++) {
+                const userIds:any = await randomUser();
+                const voteItemMulti:any = await randomVoteMultiChoice(new ObjectID(wTVoteNoti[0].votingId[0]),userIds);
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                if(voteItemMulti !== undefined && voteItemMulti.length > 0) {
+                    console.log('pass2');
+                    for(let i = 0; i < voteItemMulti.length; i++) {
+                        userEngage.clientId = clientId;
+                        userEngage.ip = ipAddress; 
+                        userEngage.device = 'tester_dev';
+                        userEngage.userId = userIds;
+                        userEngage.contentId = 'tester_dev';
+                        userEngage.contentType = 'tester_dev';
+                        userEngage.action = NotiTypeAction['vote_event_noti'];
+                        userEngage.reference = 'tester_dev';
+                        userEngage.point = Math.random() * 10 + 1;
+                        userEngage.postId = '';
+                        userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
+                        userEngage.voteItemId = new ObjectID(voteItemMulti[i].voteItemId);
+                        userEngage.voteChoiceId = new ObjectID(voteItemMulti[i].voteChoiceId);
+                        userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
+                        await this.userEngagementService.create(userEngage);
+                    }
+                }
+            }
         }
 
-        // read vote_event_noti vote multi choice.
-        for(let m=0; m<=10; m++) {
-            const userIds:any = await randomUser();
-            const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['vote_event_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = '';
-            userEngage.voteId = new ObjectID(voteIds[0]._id);
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
-            await randomVoteTextChoice(new ObjectID(voteIds[0]._id),userIds);
+        // read vote_event_noti vote text choice.
+        if(wTVoteNoti.length > 0) {
+            for(let m=0; m<=10; m++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const voteTextId:any = await randomVoteTextChoice(new ObjectID(wTVoteNoti[0].votingId[0]),userIds);
+                if(voteTextId !== undefined) {
+                    console.log('pass3');
+                    const clientId = req.headers['client-id']; 
+                    const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                    const userEngage:any = new UserEngagement();
+                    userEngage.clientId = clientId;
+                    userEngage.ip = ipAddress; 
+                    userEngage.device = 'tester_dev';
+                    userEngage.userId = userIds;
+                    userEngage.contentId = 'tester_dev';
+                    userEngage.contentType = 'tester_dev';
+                    userEngage.action = NotiTypeAction['vote_event_noti'];
+                    userEngage.reference = 'tester_dev';
+                    userEngage.point = Math.random() * 10 + 1;
+                    userEngage.postId = '';
+                    userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
+                    userEngage.voteItemId = voteTextId.voteItemId;
+                    userEngage.voteId = voteTextId.id;
+                    userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
+                    await this.userEngagementService.create(userEngage);   
+                }
+            }
         }
+
         // read line_noti
         for(let i = 0; i <= 10; i++) {
             const userIds:any = await randomUser();
@@ -792,75 +815,155 @@ export class AdminVotedController {
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
             userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.votingId = '';
             userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
             await this.userEngagementService.create(userEngage);
         }
 
         // read vote_event_noti
-        for(let j = 0; j <= 10; j++) {
-            const userIds:any = await randomUser();
-            const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['vote_event_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = '';
-            userEngage.voteId = new ObjectID(voteIds[0]._id);
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['vote_event_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
+        if(wTVoteNoti.length > 0) {
+            for(let j = 0; j <= 10; j++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['vote_event_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = '';
+                userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['vote_event_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
         }
 
         // read vote_event_noti && vote one choice && multi choice && text
-        for(let j = 0; j <= 10; j++) {
-            const userIds:any = await randomUser();
-            const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['vote_event_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = '';
-            userEngage.voteId = new ObjectID(voteIds[0]._id);
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['vote_event_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
+        if(wTVoteNoti.length > 0) {
+            for(let j = 0; j <= 10; j++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['vote_event_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = '';
+                userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['vote_event_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
         }
 
         // read pple_news_noti
-        for(let z = 0; z<=10; z++) {
-            const userIds:any = await randomUser();
-            const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
-            const clientId = req.headers['client-id']; 
-            const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
-            const userEngage:any = new UserEngagement();
-            userEngage.clientId = clientId;
-            userEngage.ip = ipAddress; 
-            userEngage.device = 'tester_dev';
-            userEngage.userId = userIds;
-            userEngage.contentId = 'tester_dev';
-            userEngage.contentType = 'tester_dev';
-            userEngage.action = NotiTypeAction['pple_news_noti'];
-            userEngage.reference = 'tester_dev';
-            userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
-            userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['pple_news_noti']) : isReadId.id ;
-            await this.userEngagementService.create(userEngage);
+        if(wTPpleNews.length > 0) {
+            for(let z = 0; z<=10; z++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['pple_news_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = new ObjectID(wTPpleNews[0].postIds[0]);
+                userEngage.votingId = '';
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['pple_news_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
+        }
+
+        // read pple_news_noti
+        if(wTPpleNews.length > 0) {
+            for(let z = 0; z<=10; z++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['pple_news_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = new ObjectID(wTPpleNews[0].postIds[0]);
+                userEngage.votingId = '';
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTPpleNews[0].postIds[0])],userIds,NotiTypeAction['pple_news_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
+        }
+
+        // read pple_news_noti && comment
+        if(wTPpleNews.length > 0) {
+            for(let z = 0; z<=10; z++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['pple_news_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = new ObjectID(wTPpleNews[0].postIds[0]);
+                userEngage.commentId = await randomComment(new ObjectID(wTPpleNews[0].postIds[0]), userIds);
+                userEngage.votingId = '';
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTPpleNews[0].postIds[0])],userIds,NotiTypeAction['pple_news_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
+        }
+
+        // read pple_news_noti && like
+        if(wTPpleNews.length > 0) {
+            for(let z = 0; z<=10; z++) {
+                const userIds:any = await randomUser();
+                const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
+                const clientId = req.headers['client-id']; 
+                const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
+                const userEngage:any = new UserEngagement();
+                userEngage.clientId = clientId;
+                userEngage.ip = ipAddress; 
+                userEngage.device = 'tester_dev';
+                userEngage.userId = userIds;
+                userEngage.contentId = 'tester_dev';
+                userEngage.contentType = 'tester_dev';
+                userEngage.action = NotiTypeAction['pple_news_noti'];
+                userEngage.reference = 'tester_dev';
+                userEngage.point = Math.random() * 10 + 1;
+                userEngage.postId = new ObjectID(wTPpleNews[0].postIds[0]);
+                userEngage.likeId = await randomLike(new ObjectID(wTPpleNews[0].postIds[0]), userIds);
+                userEngage.votingId = '';
+                userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTPpleNews[0].postIds[0])],userIds,NotiTypeAction['pple_news_noti']) : isReadId.id ;
+                await this.userEngagementService.create(userEngage);
+            }
         }
         
         // not read line_noti
@@ -879,7 +982,7 @@ export class AdminVotedController {
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
             userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.votingId = '';
             userEngage.isReadId = '';
             await this.userEngagementService.create(userEngage);
         }
@@ -899,8 +1002,8 @@ export class AdminVotedController {
             userEngage.action = NotiTypeAction['pple_news_noti'];
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
-            userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.postId = new ObjectID(wTPpleNews[0].postIds[0]);
+            userEngage.votingId = '';
             userEngage.isReadId = '';
             await this.userEngagementService.create(userEngage);
         }
@@ -922,7 +1025,7 @@ export class AdminVotedController {
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
             userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.votingId = '';
             userEngage.commentId = await randomComment(new ObjectID(postIds[0]._id), userIds);
             userEngage.likeId = await randomLike(new ObjectID(postIds[0]._id), userIds);
             userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
@@ -946,7 +1049,7 @@ export class AdminVotedController {
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
             userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.votingId = '';
             userEngage.likeId = await randomLike(new ObjectID(postIds[0]._id), userIds);
             userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
             await this.userEngagementService.create(userEngage);
@@ -969,7 +1072,7 @@ export class AdminVotedController {
             userEngage.reference = 'tester_dev';
             userEngage.point = Math.random() * 10 + 1;
             userEngage.postId = new ObjectID(postIds[0]._id);
-            userEngage.voteId = '';
+            userEngage.votingId = '';
             userEngage.commentId = await randomComment(new ObjectID(postIds[0]._id), userIds);
             userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(postIds[0]._id)],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
             await this.userEngagementService.create(userEngage);

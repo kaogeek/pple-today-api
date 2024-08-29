@@ -31,7 +31,17 @@ export class UserEngagementController {
     @Authorized('user')
     public async updateEngagement(@Param('id') id: string, @Body({ validate: true }) userEngagementUpdateRequest: UserEngagementUpdateRequest, @Res() res: any, @Req() req: any): Promise<any> {
         const query = {_id: new ObjectID(id)};
-        const newValues = { $set: { commentId: userEngagementUpdateRequest.commentId, likeId: userEngagementUpdateRequest.likeId}};
+        const newValues = { 
+            $set: {
+                voteId: userEngagementUpdateRequest.voteId,
+                votingId: userEngagementUpdateRequest.votingId,
+                voteItemId: userEngagementUpdateRequest.voteItemId,
+                voteChoiceId: userEngagementUpdateRequest.voteChoiceId,
+                isReadId: userEngagementUpdateRequest.isReadId,
+                commentId: userEngagementUpdateRequest.commentId, 
+                likeId: userEngagementUpdateRequest.likeId
+            }
+        };
         const update:any = await this.userEngagementService.update(query, newValues);
         if(update) {
             const errorResponse = ResponseUtil.getSuccessResponse('Update Engagement success.', undefined);
@@ -101,7 +111,7 @@ export class UserEngagementController {
         userEngagement.reference = userEngagementBody.reference;
         userEngagement.point = score;
         userEngagement.postId = userEngagementBody.postId === '' ? '' : new ObjectID(userEngagementBody.postId);
-        userEngagement.voteId = userEngagementBody.voteId === '' ? '' : new ObjectID(userEngagementBody.voteId);
+        userEngagement.votingId = userEngagementBody.votingId === '' ? '' : new ObjectID(userEngagementBody.votingId);
         userEngagement.isReadId = userEngagementBody.isReadId === '' ? '' : new ObjectID(userEngagementBody.isReadId);
        
         if(user){ 

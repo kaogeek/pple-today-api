@@ -46,7 +46,7 @@ export class UserEngagementRequest {
     public postId: string;
 
     @IsString()
-    public voteId: string;
+    public votingId: string;
 
     @IsString()
     public isReadId: string;

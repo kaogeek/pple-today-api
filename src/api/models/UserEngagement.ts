@@ -67,6 +67,15 @@ export class UserEngagement extends BaseModel {
     @Column({ name: 'likeId'})
     public likeId: ObjectID;
 
+    @Column({ name: 'voteChoiceId'})
+    public voteChoiceId: ObjectID;
+
+    @Column({ name: 'voteItemId'})
+    public voteItemId: ObjectID;
+
+    @Column({ name: 'votingId'})
+    public votingId: ObjectID;
+
     @BeforeInsert()
     public createDetails(): any {
         this.createdDate = moment().toDate();
