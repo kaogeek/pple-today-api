@@ -740,6 +740,7 @@ export class AdminVotedController {
             for(let h=0; h<=10; h++) {
                 const userIds:any = await randomUser();
                 const voteItemMulti:any = await randomVoteMultiChoice(new ObjectID(wTVoteNoti[0].votingId[0]),userIds);
+                console.log('voteItemMulti',voteItemMulti);
                 const isReadId:any = await this.isReadPostService.findOne({userId:userIds});
                 const clientId = req.headers['client-id']; 
                 const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 

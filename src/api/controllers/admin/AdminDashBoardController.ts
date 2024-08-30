@@ -24,7 +24,6 @@ export class AdminDashBoardController {
     public async engagementDashboard(@Body({ validate: true }) search: DashBoardRequest, @Res() res: any, @Req() req: any): Promise<any>{
         // lineNewsWeekId
         // the_things
-        console.log('search',search);
         const aggsLineNoti:any = await this.workerThreadService.aggregate(
             [
                 {
@@ -46,19 +45,59 @@ export class AdminDashBoardController {
                                 }
                             },
                             {
-                                $lookup:{
-                                    from:'UserEngagement',
-                                    let:{id:'$_id'},
-                                    pipeline:[
-                                        {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$id','$postId']
+                               $lookup: {
+                                from: 'UserLike',
+                                let: {id: '$_id'},
+                                pipeline: [
+                                    {
+                                        $match:{
+                                            $expr:{
+                                                $eq:['$$id','$subjectId']
                                                 }
                                             }
                                         }
                                     ],
-                                    as:'userEngagement'
+                                    as:'userLike'
+                               }
+                            },
+                            {
+                                $lookup:{
+                                    from: 'PostsComment',
+                                    let: {id: '$_id'},
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr:
+                                                {
+                                                    $eq:['$$id','$post']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'postsComment'
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: 'IsReadPost',
+                                    let: {id: '$_id'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $in:['$$id','$postId']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'isReadPost'
+                                }
+                            },
+                            {
+                                $addFields: {
+                                    userLikeCount: { $size: '$userLike'},
+                                    userCommentCount: { $size: '$postsComment'},
+                                    userReadCount: { $size: '$isReadPost'}
                                 }
                             },
                             {
@@ -69,7 +108,9 @@ export class AdminDashBoardController {
                                     detail:1,
                                     type:1,
                                     ownerUser:1,
-                                    userEngagement:1
+                                    userLikeCount:1,
+                                    userCommentCount:1,
+                                    userReadCount:1
                                 }
                             },
                         ],
@@ -106,18 +147,58 @@ export class AdminDashBoardController {
                             },
                             {
                                 $lookup: {
-                                    from:'UserEngagement',
+                                 from: 'UserLike',
+                                 let: {id: '$_id'},
+                                 pipeline: [
+                                     {
+                                         $match:{
+                                             $expr:{
+                                                 $eq:['$$id','$subjectId']
+                                                 }
+                                             }
+                                         }
+                                     ],
+                                     as:'userLike'
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from: 'PostsComment',
                                     let: {id: '$_id'},
-                                    pipeline:[
+                                    pipeline: [
                                         {
-                                            $match:{
-                                                $expr:{
-                                                    $eq:['$$id','$postId']
+                                            $match: {
+                                                $expr:
+                                                {
+                                                    $eq:['$$id','$post']
                                                 }
                                             }
                                         }
                                     ],
-                                    as:'userEngagement'
+                                    as:'postsComment'
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: 'IsReadPost',
+                                    let: {id: '$_id'},
+                                    pipeline: [
+                                        {
+                                            $match:{
+                                                $expr:{
+                                                    $in:['$$id','$postId']
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    as:'isReadPost'
+                                }
+                            },
+                            {
+                                $addFields: {
+                                    userLikeCount: { $size: '$userLike'},
+                                    userCommentCount: { $size: '$postsComment'},
+                                    userReadCount: { $size: '$isReadPost'}
                                 }
                             },
                             {
@@ -128,7 +209,9 @@ export class AdminDashBoardController {
                                     detail:1,
                                     type:1,
                                     ownerUser:1,
-                                    userEngagement:1,
+                                    userLikeCount:1,
+                                    userCommentCount:1,
+                                    userReadCount:1,
                                 }
                             },
                         ],
@@ -154,49 +237,143 @@ export class AdminDashBoardController {
                 {
                     $lookup: {
                         from:'VotingEvent',
-                        let: {votingId: '$votingId'},
+                        let: {theThings: '$theThings'},
                         pipeline: [
                             {
                                 $match: {
                                     $expr: {
-                                        $in:['$_id','$$votingId']
+                                        $eq:['$$theThings','$_id']
                                     }
                                 }
                             },
                             {
-                                $lookup: {
-                                    from:'UserEngagement',
-                                    let:{id:'$_id'},
+                                $project:{
+                                    _id:1,
+                                    title:1,
+                                    detail:1,
+                                    assertId:1,
+                                    converPageURL:1,
+                                    s3ConverPageURL:1,
+                                    userId:1,
+                                    approved:1,
+                                    closed:1
+
+                                }
+                            },
+                        ],
+                        as:'votingEvent'
+                    }
+                },
+                {
+                    $unwind:{
+                        path:'$votingEvent',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup:{
+                        from:'UserEngagement',
+                        let: {votingId: '$votingId'},
+                        pipeline:[
+                            {
+                                $match:{
+                                    $expr:{
+                                        $in:['$votingId','$$votingId']
+                                    }
+                                }
+                            },
+                            {
+                                $lookup:{
+                                    from:'VoteItem',
+                                    let:{voteItemId:'$voteItemId'},
                                     pipeline:[
                                         {
                                             $match:{
                                                 $expr:{
-                                                    $eq:['$$id','$votingId']
+                                                    $eq:['$$voteItemId','$_id']
                                                 }
                                             }
                                         },
-                                        {
-                                            $lookup:{
-                                                from:'VoteItem',
-                                                let:{voteItemId:'$voteItemId'},
-                                                pipeline:[
-                                                    {
-                                                        $match:{
-                                                            $expr:{
-                                                                $eq:['$$voteItemId','$_id']
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                as:'voteItem'
-                                            }
-                                        }
                                     ],
-                                    as:'userEngagement'
+                                    as:'voteItem'
+                                }
+                            },
+                            {
+                                $unwind:{
+                                    path:'$voteItem',
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $project:{
+                                    _id:1,
+                                    device:1,
+                                    userId:1,
+                                    action:1,
+                                    voteId:1,
+                                    voteChoiceId:1,
+                                    voteItem:1,
+                                    voteItemId:1,
+                                    votingEvent:1,
+                                    votingId:1,
+                                    
                                 }
                             }
                         ],
-                        as:' votingEvent'
+                        as:'userEngagement'
+                    }
+                },
+                {
+                    $addFields: {
+                        userVoteSingleChoiceCount: {
+                            $size: {
+                                $filter: {
+                                    input: '$userEngagement',
+                                    as: 'item',
+                                    cond: { $eq: ['$$item.voteItem.type', 'single']}
+                                }
+                            }
+                        },
+                        userVoteMultiChoiceCount: {
+                            $size: {
+                                $filter: {
+                                    input: '$userEngagement',
+                                    as: 'item',
+                                    cond: { $eq: ['$$item.voteItem.type', 'multi']}
+                                }
+                            }
+                        },
+                        userVoteTextChoiceCount: {
+                            $size: {
+                                $filter: {
+                                    input: '$userEngagement',
+                                    as: 'item',
+                                    cond: { $eq: ['$$item.voteItem.type', 'text']}
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project:{
+                        _id:1,
+                        createdBy:1,
+                        createdDate:1,
+                        createdTime:1,
+                        createdByUsername:1,
+                        updateDate:1,
+                        updateByUsername:1,
+                        id:1,
+                        theThings:1,
+                        sending:1,
+                        sended:1,
+                        type:1,
+                        postIds:1,
+                        active:1,
+                        votingEvent:1,
+                        userVoteSingleChoiceCount:1,
+                        userVoteMultiChoiceCount:1,
+                        userVoteTextChoiceCount:1,
                     }
                 },
                 {
