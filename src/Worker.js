@@ -14,7 +14,6 @@ parentPort.on('message', async (jobs) => {
             }
             await axios.post('https://api.line.me/v2/bot/message/push', requestBody, { headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/plain, */*', Authorization: 'Bearer ' + jobs.token } }).then((res) => {
                 if(res) {
-                    console.log('res:',res);
                     count +=1;
                 }
             }).catch((err) => {

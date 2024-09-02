@@ -125,6 +125,8 @@ export class AdminDashBoardController {
             ]
         );
 
+        console.log('aggsLineNoti',aggsLineNoti.length);
+
         const aggsPpleNoti:any = await this.workerThreadService.aggregate(
             [
                 {

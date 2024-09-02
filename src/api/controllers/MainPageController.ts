@@ -7,6 +7,7 @@
 
 import 'reflect-metadata';
 import { JsonController, Res, Get, Post, Body, Req, QueryParam } from 'routing-controllers';
+import axios from 'axios';
 import { ResponseUtil } from '../../utils/ResponseUtil';
 import { ProcessorUtil } from '../../utils/ProcessorUtil';
 import { ObjectID } from 'mongodb';
@@ -3257,7 +3258,130 @@ export class MainPageController {
                     } else {
                         postIds.push(new ObjectID(snapshot.data.majorTrend.contents[0].post._id));
                     }
-
+                    const content: any = {
+                        'messages': [
+                            {
+                                'type': 'flex',
+                                'altText': `ข่าวหน้าหนึ่งประชาชนประจำวัน`,
+                                'contents': {
+                                    'type': 'bubble',
+                                    'size': 'mega',
+                                    'body': {
+                                        'type': 'box',
+                                        'layout': 'vertical',
+                                        'contents': [],
+                                        'paddingAll': '0px',
+                                        'width': '100%',
+                                        'height': '100%'
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    let dd: any = snapshot.endDateTime.getDate() - 1;
+                    let mm = snapshot.endDateTime.getMonth() + 1;
+                    if (dd < 10) { dd = '0' + dd; }
+                    if (mm < 10) { mm = '0' + mm; }
+                    const votePPle = process.env.APP_HOME + `?date=${endDateTimeToday.getFullYear()}-${mm}-${dd}`;
+                    const endDate = new Date(snapshot.endDateTime);
+                    endDate.setDate(endDate.getDate() - 1);
+                    const dateTime = endDate.toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    });
+                    content['messages'][0].contents.body.contents.push(
+                        {
+                            'type': 'image',
+                            'url': snapshot.data.pageRoundRobin.contents[0] !== undefined ? snapshot.data.pageRoundRobin.contents[0].coverPageSignUrl : snapshot.data.majorTrend.contents[0].coverPageSignUrl,
+                            'size': 'full',
+                            'aspectMode': 'cover',
+                            'aspectRatio': '1:1',
+                            'gravity': 'center'
+                        },
+                        {
+                            'type': 'box',
+                            'layout': 'vertical',
+                            'contents': [
+                                {
+                                    'type': 'box',
+                                    'layout': 'vertical',
+                                    'contents': [
+                                        {
+                                            'type': 'text',
+                                            'text': snapshot.data.pageRoundRobin.contents[0] !== undefined ? snapshot.data.pageRoundRobin.contents[0].post.title : snapshot.data.majorTrend.contents[0].post.title,
+                                            'maxLines': 3,
+                                            'wrap': true
+                                        },
+                                        {
+                                            'type': 'text',
+                                            'text': dateTime,
+                                            'gravity': 'bottom',
+                                            'align': 'end',
+                                            'size': '12px',
+                                            'margin': '5px',
+                                            'offsetEnd': '5px'
+                                        },
+                                        {
+                                            'type': 'box',
+                                            'layout': 'vertical',
+                                            'contents': [
+                                                {
+                                                    'type': 'button',
+                                                    'action': {
+                                                        'type': 'uri',
+                                                        'label': 'อ่านเพิ่มเติม',
+                                                        'uri': votePPle + '&openExternalBrowser=1'
+                                                    },
+                                                    'color': '#F18805',
+                                                    'scaling': false,
+                                                    'style': 'primary',
+                                                    'height': 'sm',
+                                                    'adjustMode': 'shrink-to-fit',
+                                                    'gravity': 'center',
+                                                    'margin': '10px'
+                                                }
+                                            ],
+                                            'position': 'relative',
+                                            'height': '60px'
+                                        }
+                                    ],
+                                    'height': '150px',
+                                    'paddingAll': '10px',
+                                    'backgroundColor': '#F0F0F0',
+                                    'width': '100%'
+                                },
+                            ],
+                            'width': '100%',
+                            'height': '100%'
+                        }
+                    );
+                    const tokenLine = process.env.LINE_AUTHORIZATION;
+                    const lineUsers = await axios.get(
+                        'https://api.line.me/v2/bot/followers/ids', {
+                        headers: {
+                            Authorization: 'Bearer ' + tokenLine
+                        }
+                    });
+                    if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
+                        const chunksVote: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
+                        chunksVote.forEach((userVote,i) => {
+                            const worker = new Worker(process.env.WORKER_THREAD_PATH);
+                            const messagePayload = {
+                                users: userVote,
+                                messages: JSON.stringify(content['messages']),
+                                type: 'LINE_NOTI',
+                                token: tokenLine
+                            };
+                            
+                            worker.postMessage(messagePayload);
+                            worker.on('message', async (resultVote:any) => {
+                                if(resultVote.message === 'done') {
+                                    console.log(`Worker ${i} completed.`);
+                                }
+                            });
+                        });
+                    }
                     const workThreadModel: WorkerThread = new WorkerThread();
                     workThreadModel.theThings = new ObjectID(result.id);
                     workThreadModel.sending = token.length;
@@ -3334,7 +3458,130 @@ export class MainPageController {
                     } else {
                         postIds.push(new ObjectID(snapshot.data.majorTrend.contents[0].post._id));
                     }
-
+                    const content: any = {
+                        'messages': [
+                            {
+                                'type': 'flex',
+                                'altText': `ข่าวหน้าหนึ่งประชาชนประจำวัน`,
+                                'contents': {
+                                    'type': 'bubble',
+                                    'size': 'mega',
+                                    'body': {
+                                        'type': 'box',
+                                        'layout': 'vertical',
+                                        'contents': [],
+                                        'paddingAll': '0px',
+                                        'width': '100%',
+                                        'height': '100%'
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    let dd: any = snapshot.endDateTime.getDate();
+                    let mm = snapshot.endDateTime.getMonth() + 1;
+                    if (dd < 10) { dd = '0' + dd; }
+                    if (mm < 10) { mm = '0' + mm; }
+                    const votePPle = process.env.APP_HOME + `?date=${endDateTimeToday.getFullYear()}-${mm}-${dd}`;
+                    const endDate = new Date(snapshot.endDateTime);
+                    endDate.setDate(endDate.getDate() - 1);
+                    const dateTime = endDate.toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    });
+                    content['messages'][0].contents.body.contents.push(
+                        {
+                            'type': 'image',
+                            'url': snapshot.data.pageRoundRobin.contents[0] !== undefined ? snapshot.data.pageRoundRobin.contents[0].coverPageSignUrl : snapshot.data.majorTrend.contents[0].coverPageSignUrl,
+                            'size': 'full',
+                            'aspectMode': 'cover',
+                            'aspectRatio': '1:1',
+                            'gravity': 'center'
+                        },
+                        {
+                            'type': 'box',
+                            'layout': 'vertical',
+                            'contents': [
+                                {
+                                    'type': 'box',
+                                    'layout': 'vertical',
+                                    'contents': [
+                                        {
+                                            'type': 'text',
+                                            'text': snapshot.data.pageRoundRobin.contents[0] !== undefined ? snapshot.data.pageRoundRobin.contents[0].post.title : snapshot.data.majorTrend.contents[0].post.title,
+                                            'maxLines': 3,
+                                            'wrap': true
+                                        },
+                                        {
+                                            'type': 'text',
+                                            'text': dateTime,
+                                            'gravity': 'bottom',
+                                            'align': 'end',
+                                            'size': '12px',
+                                            'margin': '5px',
+                                            'offsetEnd': '5px'
+                                        },
+                                        {
+                                            'type': 'box',
+                                            'layout': 'vertical',
+                                            'contents': [
+                                                {
+                                                    'type': 'button',
+                                                    'action': {
+                                                        'type': 'uri',
+                                                        'label': 'อ่านเพิ่มเติม',
+                                                        'uri': votePPle + '&openExternalBrowser=1'
+                                                    },
+                                                    'color': '#F18805',
+                                                    'scaling': false,
+                                                    'style': 'primary',
+                                                    'height': 'sm',
+                                                    'adjustMode': 'shrink-to-fit',
+                                                    'gravity': 'center',
+                                                    'margin': '10px'
+                                                }
+                                            ],
+                                            'position': 'relative',
+                                            'height': '60px'
+                                        }
+                                    ],
+                                    'height': '150px',
+                                    'paddingAll': '10px',
+                                    'backgroundColor': '#F0F0F0',
+                                    'width': '100%'
+                                },
+                            ],
+                            'width': '100%',
+                            'height': '100%'
+                        }
+                    );
+                    const tokenLine = process.env.LINE_AUTHORIZATION;
+                    const lineUsers = await axios.get(
+                        'https://api.line.me/v2/bot/followers/ids', {
+                        headers: {
+                            Authorization: 'Bearer ' + tokenLine
+                        }
+                    });
+                    if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
+                        const chunksVote: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
+                        chunksVote.forEach((userVote,i) => {
+                            const worker = new Worker(process.env.WORKER_THREAD_PATH);
+                            const messagePayload = {
+                                users: userVote,
+                                messages: JSON.stringify(content['messages']),
+                                type: 'LINE_NOTI',
+                                token: tokenLine
+                            };
+                            
+                            worker.postMessage(messagePayload);
+                            worker.on('message', async (resultVote:any) => {
+                                if(resultVote.message === 'done') {
+                                    console.log(`Worker ${i} completed.`);
+                                }
+                            });
+                        });
+                    }
                     const workThreadModel: WorkerThread = new WorkerThread();
                     workThreadModel.theThings = new ObjectID(result.id);
                     workThreadModel.sending = token.length;

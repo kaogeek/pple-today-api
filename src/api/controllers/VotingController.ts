@@ -6273,6 +6273,7 @@ export class VotingController {
             return res.status(400).send(errorResponse);
         }
         // check ban 
+        let pageObj:any = null;
         if (pageId !== undefined && pageId !== null) {
             pageObjId = new ObjectID(pageId);
             pageData = await this.pageService.find({ where: { _id: pageObjId } }); // ??????? WTF
@@ -6281,7 +6282,7 @@ export class VotingController {
                 return res.status(400).send(ResponseUtil.getErrorResponse('Page was not found.', undefined));
             }
 
-            const pageObj = await this.pageService.findOne({ _id: pageObjId });
+            pageObj = await this.pageService.findOne({ _id: pageObjId });
             if (pageObj !== undefined && pageObj.banned === true) {
                 const errorResponse = ResponseUtil.getErrorResponse('Page was banned.', undefined);
                 return res.status(400).send(errorResponse);
@@ -6293,8 +6294,8 @@ export class VotingController {
             if (!canAccess) {
                 return res.status(401).send(ResponseUtil.getErrorResponse('You cannot edit vote event of this page.', undefined));
             }
-
         }
+
         const user = await this.userService.findOne({ _id: userObjId });
         if (user !== undefined && user !== null && user.banned === true) {
             const errorResponse = ResponseUtil.getErrorResponse('You have been banned.', undefined);
@@ -6483,7 +6484,6 @@ export class VotingController {
                 const fireBaseToken:any[] = [];
                 // ถ้าเป็น true ส่ง noti หาทุกคน 
                 if(defaultNotiVoter === String('true')) {
-                    console.log('pass1');
                     deviceToken = await this.deviceTokenService.aggregate([
                         {
                             $match: {
@@ -6512,6 +6512,130 @@ export class VotingController {
                         }
                     ]);
                     if (deviceToken.length > 0 ) {
+                        const content: any = {
+                            'messages': [
+                                {
+                                    'type': 'flex',
+                                    'altText': `รวมโหวตและแสดงความคิดเห็น กับ ${pageObj.name}`,
+                                    'contents': {
+                                        'type': 'bubble',
+                                        'size': 'mega',
+                                        'body': {
+                                            'type': 'box',
+                                            'layout': 'vertical',
+                                            'contents': [],
+                                            'paddingAll': '0px',
+                                            'width': '100%',
+                                            'height': '100%'
+                                        }
+                                    }
+                                }
+                            ]
+                        };
+                        let dd: any = result.createdDate.getDate();
+                        let mm = result.createdDate.getMonth() + 1;
+                        if (dd < 10) { dd = '0' + dd; }
+                        if (mm < 10) { mm = '0' + mm; }
+                        const votePPle = process.env.APP_VOTE + `/event/${result.id}?noti=true`;
+                        const endDate = new Date(result.createdDate);
+                        endDate.setDate(endDate.getDate() - 1);
+                        const dateTime = endDate.toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        });
+                        content['messages'][0].contents.body.contents.push(
+                            {
+                                'type': 'image',
+                                'url': result.s3CoverPageURL,
+                                'size': 'full',
+                                'aspectMode': 'cover',
+                                'aspectRatio': '1:1',
+                                'gravity': 'center'
+                            },
+                            {
+                                'type': 'box',
+                                'layout': 'vertical',
+                                'contents': [
+                                    {
+                                        'type': 'box',
+                                        'layout': 'vertical',
+                                        'contents': [
+                                            {
+                                                'type': 'text',
+                                                'text': result.title,
+                                                'maxLines': 3,
+                                                'wrap': true
+                                            },
+                                            {
+                                                'type': 'text',
+                                                'text': dateTime,
+                                                'gravity': 'bottom',
+                                                'align': 'end',
+                                                'size': '12px',
+                                                'margin': '5px',
+                                                'offsetEnd': '5px'
+                                            },
+                                            {
+                                                'type': 'box',
+                                                'layout': 'vertical',
+                                                'contents': [
+                                                    {
+                                                        'type': 'button',
+                                                        'action': {
+                                                            'type': 'uri',
+                                                            'label': 'อ่านเพิ่มเติม',
+                                                            'uri': votePPle + '&openExternalBrowser=1'
+                                                        },
+                                                        'color': '#F18805',
+                                                        'scaling': false,
+                                                        'style': 'primary',
+                                                        'height': 'sm',
+                                                        'adjustMode': 'shrink-to-fit',
+                                                        'gravity': 'center',
+                                                        'margin': '10px'
+                                                    }
+                                                ],
+                                                'position': 'relative',
+                                                'height': '60px'
+                                            }
+                                        ],
+                                        'height': '150px',
+                                        'paddingAll': '10px',
+                                        'backgroundColor': '#F0F0F0',
+                                        'width': '100%'
+                                    },
+                                ],
+                                'width': '100%',
+                                'height': '100%'
+                            }
+                        );
+                        const tokenLine = process.env.LINE_AUTHORIZATION;
+                        const lineUsers = await axios.get(
+                            'https://api.line.me/v2/bot/followers/ids', {
+                            headers: {
+                                Authorization: 'Bearer ' + tokenLine
+                            }
+                        });
+                        if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
+                            const chunksVote: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
+                            chunksVote.forEach((userVote,i) => {
+                                const worker = new Worker(process.env.WORKER_THREAD_PATH);
+                                const messagePayload = {
+                                    users: userVote,
+                                    messages: JSON.stringify(content['messages']),
+                                    type: 'LINE_NOTI',
+                                    token: tokenLine
+                                };
+                                
+                                worker.postMessage(messagePayload);
+                                worker.on('message', async (resultVote:any) => {
+                                    if(resultVote.message === 'done') {
+                                        console.log(`Worker ${i} completed.`);
+                                    }
+                                });
+                            });
+                        }
                         const workThreadModel: WorkerThread = new WorkerThread();
                         workThreadModel.theThings = new ObjectID(result.id);
                         workThreadModel.sending = deviceToken.length;
@@ -6528,8 +6652,14 @@ export class VotingController {
                                 'body': detail,
                                 'image': signUrl,
                                 'type': 'VOTE_EVENT_NOTI',
-                                'link': process.env.APP_VOTE +`/event/${pageObjId}`,
+                                'link': process.env.APP_VOTE +`/event/${pageObjId}?noti=true`,
                                 'token': item,
+                                'line_noti_vote': {
+                                    users: user,
+                                    messages: JSON.stringify(content['messages']),
+                                    type: 'LINE_NOTI',
+                                    token: tokenLine
+                                }
                                 // 'user': item['users']
                             };
                             
@@ -6545,7 +6675,6 @@ export class VotingController {
                 } else {
                     // ถ้าเป็น false ส่ง noti เฉพาะบางคน
                     const idxArr: any[] = [];
-                    console.log('pass2');
                     const splitEligible:any[] = eligibleValue ? eligibleValue.split(',') : eligibleValue;
                     if(splitEligible.length > 0) {
                         for(const item of splitEligible) {
@@ -6603,6 +6732,131 @@ export class VotingController {
                                 return fireBaseToken.indexOf(element) === index;
                             }
                     );
+                    const content: any = {
+                        'messages': [
+                            {
+                                'type': 'flex',
+                                'altText': `รวมโหวตและแสดงความคิดเห็น กับ ${pageObj.name}`,
+                                'contents': {
+                                    'type': 'bubble',
+                                    'size': 'mega',
+                                    'body': {
+                                        'type': 'box',
+                                        'layout': 'vertical',
+                                        'contents': [],
+                                        'paddingAll': '0px',
+                                        'width': '100%',
+                                        'height': '100%'
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    let dd: any = result.createdDate.getDate();
+                    let mm = result.createdDate.getMonth() + 1;
+                    if (dd < 10) { dd = '0' + dd; }
+                    if (mm < 10) { mm = '0' + mm; }
+                    const votePPle = process.env.APP_VOTE + `/event/${result.id}?noti=true`;
+                    const endDate = new Date(result.createdDate);
+                    endDate.setDate(endDate.getDate() - 1);
+                    const dateTime = endDate.toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    });
+                    content['messages'][0].contents.body.contents.push(
+                        {
+                            'type': 'image',
+                            'url': result.s3CoverPageURL,
+                            'size': 'full',
+                            'aspectMode': 'cover',
+                            'aspectRatio': '1:1',
+                            'gravity': 'center'
+                        },
+                        {
+                            'type': 'box',
+                            'layout': 'vertical',
+                            'contents': [
+                                {
+                                    'type': 'box',
+                                    'layout': 'vertical',
+                                    'contents': [
+                                        {
+                                            'type': 'text',
+                                            'text': result.title,
+                                            'maxLines': 3,
+                                            'wrap': true
+                                        },
+                                        {
+                                            'type': 'text',
+                                            'text': dateTime,
+                                            'gravity': 'bottom',
+                                            'align': 'end',
+                                            'size': '12px',
+                                            'margin': '5px',
+                                            'offsetEnd': '5px'
+                                        },
+                                        {
+                                            'type': 'box',
+                                            'layout': 'vertical',
+                                            'contents': [
+                                                {
+                                                    'type': 'button',
+                                                    'action': {
+                                                        'type': 'uri',
+                                                        'label': 'อ่านเพิ่มเติม',
+                                                        'uri': votePPle + '&openExternalBrowser=1'
+                                                    },
+                                                    'color': '#F18805',
+                                                    'scaling': false,
+                                                    'style': 'primary',
+                                                    'height': 'sm',
+                                                    'adjustMode': 'shrink-to-fit',
+                                                    'gravity': 'center',
+                                                    'margin': '10px'
+                                                }
+                                            ],
+                                            'position': 'relative',
+                                            'height': '60px'
+                                        }
+                                    ],
+                                    'height': '150px',
+                                    'paddingAll': '10px',
+                                    'backgroundColor': '#F0F0F0',
+                                    'width': '100%'
+                                },
+                            ],
+                            'width': '100%',
+                            'height': '100%'
+                        }
+                    );
+                    const tokenLine = process.env.LINE_AUTHORIZATION;
+                    const lineUsers = await axios.get(
+                        'https://api.line.me/v2/bot/followers/ids', {
+                        headers: {
+                            Authorization: 'Bearer ' + tokenLine
+                        }
+                    });
+                    if (lineUsers.data.userIds.length > 0 && content['messages'][0].contents.body.contents.length > 0) {
+                        const chunksVote: number[][] = await checkify(lineUsers.data.userIds, Number(process.env.WORKER_THREAD_JOBS));
+                        chunksVote.forEach((userVote,i) => {
+                            const worker = new Worker(process.env.WORKER_THREAD_PATH);
+                            const messagePayload = {
+                                users: userVote,
+                                messages: JSON.stringify(content['messages']),
+                                type: 'LINE_NOTI',
+                                token: tokenLine
+                            };
+                            
+                            worker.postMessage(messagePayload);
+                            worker.on('message', async (resultVote:any) => {
+                                if(resultVote.message === 'done') {
+                                    console.log(`Worker ${i} completed.`);
+                                }
+                            });
+                        });
+                    }
+
                     const workThreadModel: WorkerThread = new WorkerThread();
                     workThreadModel.theThings = new ObjectID(result.id);
                     workThreadModel.sending = token.length;
