@@ -188,3 +188,10 @@ export const NOTI_VOTER = 'noti.voter';
 
 export const DEFAULT_SPECIFIC_NOTI_VOTER = false;
 export const SPECIFIC_NOTI_VOTER = 'specific.noti.voter';
+
+// line_flex_message
+export const DEFAULT_SWITCHING_LINE_FLEX_MESSAGE = false;
+export const SWITCHING_LINE_FLEX_MESSAGE = 'switching.line.flex.message';
+
+export const DEFAULT_SWITCHING_WORKER_THREAD_NOTIFICATION = false;
+export const SWITCHING_WORKER_THREAD_NOTIFICATION = 'switching.worker.thread.notification';

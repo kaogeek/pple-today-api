@@ -6,7 +6,9 @@ import { LineNewsWeek } from '../models/LineNewsWeek';
 import { LineNewsWeekService } from '../services/LineNewsWeekService';
 import {
     DEFAULT_LINE_NEWS_WEEK_OA,
-    LINE_NEWS_WEEK_OA
+    LINE_NEWS_WEEK_OA,
+    DEFAULT_SWITCHING_LINE_FLEX_MESSAGE,
+    SWITCHING_LINE_FLEX_MESSAGE
 } from '../../constants/SystemConfig';
 import { LineNewMovePartyService } from '../services/LineNewMovePartyService';
 import { ConfigService } from '../services/ConfigService';
@@ -51,6 +53,19 @@ export class PointMfpController {
                 }
             ]
         );
+
+        // SWITCHING_LINE_FLEX_MESSAGE
+        let switchingLFM = DEFAULT_SWITCHING_LINE_FLEX_MESSAGE;
+        const configSwitchingLFM = await this.configService.getConfig(SWITCHING_LINE_FLEX_MESSAGE);
+        if (configSwitchingLFM) {
+            switchingLFM = configSwitchingLFM.value;
+        }
+
+        if(String(switchingLFM) === 'false') {
+            const errorResponse = ResponseUtil.getErrorResponse('Config switching line flex message is false.', undefined);
+            return res.status(400).send(errorResponse);
+        }
+
         const twoWeeksAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000 * pageLikePoint);
         // TODO ::
         if (lineOa.length === 0) {
