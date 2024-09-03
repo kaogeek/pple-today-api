@@ -232,7 +232,7 @@ export class AdminDashBoardController {
             [
                 {
                     $match: {
-                        createdDate: { $gte: new Date(search.createDatePpleNews), $lte: new Date(search.endDatePpleNews) },
+                        createdDate: { $gte: new Date(search.createDateVoteEventNoti), $lte: new Date(search.endDateVoteEventNoti) },
                         type: NotiTypeAction['vote_event_noti']
                     }
                 },
