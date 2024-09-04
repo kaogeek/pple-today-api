@@ -14,9 +14,9 @@ export class IsReadVote {
     @IsString()
     public userId: ObjectID;
 
-    @IsNotEmpty({ message: 'voteId is required' })
+    @IsNotEmpty({ message: 'votingId is required' })
     @IsArray()
-    public voteId: string;
+    public votingId: string;
 
     @IsNotEmpty({ message: 'isRead is required' })
     @IsBoolean()

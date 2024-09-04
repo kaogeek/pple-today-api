@@ -122,7 +122,7 @@ export class VotingController {
         const clientId = req.headers['client-id']; 
         const ipAddress = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress).split(',')[0]; 
         let count = 0;
-        for(const item of data.voteId) {
+        for(const item of data.votingId) {
             count += 1;
             const workerTheadFindOne:any = await this.workerThreadService.findOne({theThings: new ObjectID(item), type: data.action.toLocaleUpperCase().trim()});
             const userEngagement = new UserEngagement();
@@ -136,7 +136,7 @@ export class VotingController {
             userEngagement.reference = '';
             userEngagement.point = 5;
             userEngagement.postId = '';
-            userEngagement.voteId = new ObjectID(item);
+            userEngagement.votingId = new ObjectID(item);
             userEngagement.isReadId = '';
             await this.userEngagementService.create(userEngagement);
             if(workerTheadFindOne !== undefined) {
@@ -152,7 +152,7 @@ export class VotingController {
                 { 
                     $set: 
                     { 
-                        voteId: data.voteId, 
+                        votingId: data.votingId, 
                         isRead: data.isRead,
                         device: data.device.toLowerCase().trim(),
                         action: data.action.toUpperCase().trim(),

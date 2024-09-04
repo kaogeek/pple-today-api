@@ -18,8 +18,8 @@ export class IsReadPost extends BaseModel {
     @Column({ name: 'postId' })
     public postId: ObjectID;
 
-    @Column({ name: 'voteId'})
-    public voteId: ObjectID;
+    @Column({ name: 'votingId'})
+    public votingId: ObjectID;
 
     @Column({ name: 'device'})
     public device: string;

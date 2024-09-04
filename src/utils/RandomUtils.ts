@@ -115,7 +115,8 @@ export async function randomIsRead(thingId: string[], userId:any, action: string
     } else {
         await isReadPostService.findOneAndUpdate(
             { userId: new ObjectID(userId)},
-            { $set: { postId: thingId, 
+            { $set: { 
+                    votingId: thingId, 
                     isRead: true,
                     device: randDevice,
                     action: action.toUpperCase().trim(),
