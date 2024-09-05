@@ -12,15 +12,15 @@ export class UserEngagementUpdateRequest {
     public likeId: string;
 
     @IsArray()
-    public voteChoiceId: string;
+    public voteChoiceId: [];
 
     @IsArray()
-    public voteItemId: string;
+    public voteItemId: [];
 
     @IsString()
     public votingId: string;
 
-    @IsString()
-    public voteId: string;
+    @IsArray()
+    public voteId: [];
 
 }

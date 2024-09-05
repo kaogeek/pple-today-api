@@ -12,4 +12,6 @@ export const PROVIDER = {
     GOOGLE: 'GOOGLE',
     APPLE: 'APPLE',
     MFP: 'MFP',
+    ACT: 'ACT',
+    NEXT_GENT: 'NEXT_GENT',
 };

@@ -56,7 +56,7 @@ export class UserEngagement extends BaseModel {
     public postId: ObjectID;
 
     @Column({ name: 'voteId'})
-    public voteId: ObjectID;
+    public voteId: ObjectID[];
 
     @Column({ name: 'isReadId'})
     public isReadId: ObjectID;

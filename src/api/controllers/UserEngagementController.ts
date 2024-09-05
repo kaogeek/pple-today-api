@@ -31,6 +31,21 @@ export class UserEngagementController {
     @Authorized('user')
     public async updateEngagement(@Param('id') id: string, @Body({ validate: true }) userEngagementUpdateRequest: UserEngagementUpdateRequest, @Res() res: any, @Req() req: any): Promise<any> {
         const query = {_id: new ObjectID(id)};
+        const voteIdArr: ObjectID[] = [];
+        const voteChoiceIdArr: ObjectID[] = [];
+        const voteItemIdArr: ObjectID[] = [];
+        if(userEngagementUpdateRequest.voteId.length > 0) {
+            userEngagementUpdateRequest.voteId.map((item:any) =>  voteIdArr.push(new ObjectID(item)));
+        }
+
+        if(userEngagementUpdateRequest.voteItemId.length > 0) {
+            userEngagementUpdateRequest.voteItemId.map((item:any) => voteItemIdArr.push(new ObjectID(item)));
+        }
+
+        if(userEngagementUpdateRequest.voteChoiceId.length > 0) {
+            userEngagementUpdateRequest.voteChoiceId.map((item:any) => voteChoiceIdArr.push(new ObjectID(item)));
+        }
+
         const newValues = { 
             $set: {
                 voteId: userEngagementUpdateRequest.voteId,

@@ -726,9 +726,9 @@ export class AdminVotedController {
                     userEngage.point = Math.random() * 10 + 1;
                     userEngage.postId = '';
                     userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
-                    userEngage.voteItemId = voteChoice.voteItemId;
-                    userEngage.voteChoiceId = voteChoice.voteChoiceId;
-                    userEngage.voteId = voteChoice.id;
+                    userEngage.voteItemId = [voteChoice.voteItemId];
+                    userEngage.voteChoiceId = [voteChoice.voteChoiceId];
+                    userEngage.voteId = [voteChoice.id];
                     userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
                     await this.userEngagementService.create(userEngage);
                 }
@@ -757,8 +757,8 @@ export class AdminVotedController {
                         userEngage.point = Math.random() * 10 + 1;
                         userEngage.postId = '';
                         userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
-                        userEngage.voteItemId = new ObjectID(voteItemMulti[i].voteItemId);
-                        userEngage.voteChoiceId = new ObjectID(voteItemMulti[i].voteChoiceId);
+                        userEngage.voteItemId = [new ObjectID(voteItemMulti[i].voteItemId)];
+                        userEngage.voteChoiceId = [new ObjectID(voteItemMulti[i].voteChoiceId)];
                         userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
                         await this.userEngagementService.create(userEngage);
                     }
@@ -788,8 +788,8 @@ export class AdminVotedController {
                     userEngage.point = Math.random() * 10 + 1;
                     userEngage.postId = '';
                     userEngage.votingId = new ObjectID(wTVoteNoti[0].votingId[0]);
-                    userEngage.voteItemId = voteTextId.voteItemId;
-                    userEngage.voteId = voteTextId.id;
+                    userEngage.voteItemId = [voteTextId.voteItemId];
+                    userEngage.voteId = [voteTextId.id];
                     userEngage.isReadId = isReadId === undefined ? await randomIsRead([new ObjectID(wTVoteNoti[0].votingId[0])],userIds,NotiTypeAction['line_noti']) : isReadId.id ;
                     await this.userEngagementService.create(userEngage);   
                 }
@@ -842,7 +842,7 @@ export class AdminVotedController {
             }
         }
 
-        // read vote_event_noti && vote one choice && multi choice && text
+        // read vote_event_noti 
         if(wTVoteNoti.length > 0) {
             for(let j = 0; j <= 10; j++) {
                 const userIds:any = await randomUser();

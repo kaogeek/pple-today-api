@@ -6,9 +6,7 @@
  */
 
 import { EntityRepository, MongoRepository } from 'typeorm';
-import { MfpAct } from '../models/MfpActModel';
+import { Pplebinding } from '../models/PplebindingModel';
 
-@EntityRepository(MfpAct)
-export class MfpActRepository extends MongoRepository<MfpAct>  {
-
-}
+@EntityRepository(Pplebinding)
+export class PplebindingRepository extends MongoRepository<Pplebinding> {}

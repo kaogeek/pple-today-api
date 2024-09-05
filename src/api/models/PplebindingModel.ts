@@ -4,8 +4,8 @@ import { ObjectID } from 'mongodb';
 import { BaseModel } from './BaseModel';
 import moment from 'moment';
 
-@Entity('MfpAct')
-export class MfpAct extends BaseModel {
+@Entity('Pplebinding')
+export class Pplebinding extends BaseModel {
 
     @ObjectIdColumn({ name: '_id' })
     @IsNotEmpty()

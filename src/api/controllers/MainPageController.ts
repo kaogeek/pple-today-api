@@ -1622,7 +1622,7 @@ export class MainPageController {
                 userEngagement.reference = '';
                 userEngagement.point = 5;
                 userEngagement.postId = new ObjectID(item);
-                userEngagement.voteId = '';
+                userEngagement.voteId = [];
                 userEngagement.isReadId = '';
                 await this.userEngagementService.create(userEngagement);
                 if(workerTheadFindOne !== undefined) {
@@ -1642,7 +1642,7 @@ export class MainPageController {
                 userEngagement.reference = '';
                 userEngagement.point = 5;
                 userEngagement.postId = new ObjectID(item);
-                userEngagement.voteId = '';
+                userEngagement.voteId = [];
                 userEngagement.isReadId = '';
                 await this.userEngagementService.create(userEngagement);
             } 

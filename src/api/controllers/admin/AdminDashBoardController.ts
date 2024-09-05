@@ -88,6 +88,11 @@ export class AdminDashBoardController {
                                                     $in:['$$id','$postId']
                                                 }
                                             }
+                                        },
+                                        {
+                                            $match:{
+                                                action:'LINE_NOTI'
+                                            }
                                         }
                                     ],
                                     as:'isReadPost'
@@ -124,9 +129,7 @@ export class AdminDashBoardController {
                 },
             ]
         );
-
-        console.log('aggsLineNoti',aggsLineNoti.length);
-
+        console.log('aggsLineNoti',aggsLineNoti[0]._id);
         const aggsPpleNoti:any = await this.workerThreadService.aggregate(
             [
                 {
@@ -191,6 +194,11 @@ export class AdminDashBoardController {
                                                     $in:['$$id','$postId']
                                                 }
                                             }
+                                        },
+                                        {
+                                            $match:{
+                                                action:'PPLE_NEWS'
+                                            }
                                         }
                                     ],
                                     as:'isReadPost'
@@ -227,7 +235,7 @@ export class AdminDashBoardController {
                 },
             ]
         );
-
+        console.log('aggsPpleNoti',aggsPpleNoti[0]._id);
         const aggsVoteNoti:any = await this.workerThreadService.aggregate(
             [
                 {
@@ -292,7 +300,7 @@ export class AdminDashBoardController {
                                         {
                                             $match:{
                                                 $expr:{
-                                                    $eq:['$$voteItemId','$_id']
+                                                    $in: ['$_id', { $ifNull: ['$$voteItemId', []] }]
                                                 }
                                             }
                                         },
