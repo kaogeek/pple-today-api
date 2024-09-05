@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class UserEngagementUpdateRequest {
     @IsString()
@@ -11,10 +11,10 @@ export class UserEngagementUpdateRequest {
     @IsString()
     public likeId: string;
 
-    @IsString()
+    @IsArray()
     public voteChoiceId: string;
 
-    @IsString()
+    @IsArray()
     public voteItemId: string;
 
     @IsString()

@@ -68,10 +68,10 @@ export class UserEngagement extends BaseModel {
     public likeId: ObjectID;
 
     @Column({ name: 'voteChoiceId'})
-    public voteChoiceId: ObjectID;
+    public voteChoiceId: ObjectID[];
 
     @Column({ name: 'voteItemId'})
-    public voteItemId: ObjectID;
+    public voteItemId: ObjectID[];
 
     @Column({ name: 'votingId'})
     public votingId: ObjectID;
