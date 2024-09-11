@@ -314,7 +314,7 @@ export class PageController {
         const regex = /[ก-ฮ]/g;
         let assetCover: any;
         const pagePicture = await this.facebookService.getPagePicture(socialBinding.facebookPageId, socialBinding.pageAccessToken);
-        const { data } = await axios.get('https://graph.facebook.com/v14.0/' + socialBinding.facebookPageId + '?fields=cover&access_token=' + socialBinding.pageAccessToken);
+        const { data } = await axios.get('https://graph.facebook.com/v20.0/' + socialBinding.facebookPageId + '?fields=cover&access_token=' + socialBinding.pageAccessToken);
         const pageDetail = await this.facebookService.getPageFb(socialBinding.facebookPageId, socialBinding.pageAccessToken);
         if (pageDetail.username !== undefined) {
             found = pageDetail.username.match(regex);

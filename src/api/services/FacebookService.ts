@@ -130,7 +130,7 @@ export class FacebookService {
 
     public async getPagePicture(pageId: string, access_token: string): Promise<any> {
         try {
-            const { data } = await axios.get('https://graph.facebook.com/v14.0/' + pageId + '/picture?redirect=0&type=large&access_token=' + access_token);
+            const { data } = await axios.get('https://graph.facebook.com/v20.0/' + pageId + '/picture?redirect=0&type=large&access_token=' + access_token);
             return data;
         } catch (err) {
             return err;
@@ -204,7 +204,7 @@ export class FacebookService {
     }
     public async getRefreshToken(accessToken: string): Promise<any> {
         try {
-            const { data } = await axios.post('https://graph.facebook.com/v14.0/oauth/access_token?grant_type=fb_exchange_token&client_id=' + facebook_setup.FACEBOOK_APP_ID + '&client_secret=' + facebook_setup.FACEBOOK_APP_SECRET + '&fb_exchange_token=' + accessToken);
+            const { data } = await axios.post('https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=' + facebook_setup.FACEBOOK_APP_ID + '&client_secret=' + facebook_setup.FACEBOOK_APP_SECRET + '&fb_exchange_token=' + accessToken);
             return data;
         } catch (err) {
             return err;
@@ -221,7 +221,7 @@ export class FacebookService {
     }
     public async expireToken(inputToken: string, appAccessToken: any): Promise<any> {
         try {
-            const { data } = await axios.get('https://graph.facebook.com/v14.0/debug_token?fields=data,expires_at,data_access_expires_at,is_valid&input_token=' + inputToken + '&access_token=' + appAccessToken);
+            const { data } = await axios.get('https://graph.facebook.com/v20.0/debug_token?fields=data,expires_at,data_access_expires_at,is_valid&input_token=' + inputToken + '&access_token=' + appAccessToken);
             return data;
         } catch (err) {
             console.log('Cannot debug token', err);
@@ -233,7 +233,7 @@ export class FacebookService {
 
     public async subScriptionWbApp(verifyToken: string): Promise<any> {
         try {
-            const { data } = await axios.post('https://graph.facebook.com/v14.0/' + facebook_setup.FACEBOOK_APP_ID + '/subscriptions?object=page&include_values=true&verify_token= ' + verifyToken + '&callback_url=' + process.env.FACEBOOK_CALLBACK_URL + '/&access_token= ' + facebook_setup.FACEBOOK_APP_ID + '|' + facebook_setup.FACEBOOK_APP_SECRET);
+            const { data } = await axios.post('https://graph.facebook.com/v20.0/' + facebook_setup.FACEBOOK_APP_ID + '/subscriptions?object=page&include_values=true&verify_token= ' + verifyToken + '&callback_url=' + process.env.FACEBOOK_CALLBACK_URL + '/&access_token= ' + facebook_setup.FACEBOOK_APP_ID + '|' + facebook_setup.FACEBOOK_APP_SECRET);
             return data;
         } catch (err) {
             console.log('Cannot subscribetion Webhooks ', err);
@@ -431,7 +431,7 @@ export class FacebookService {
 
     public async coverImagePage(fbUserId: string, accessToken: string): Promise<any> {
         try {
-            const { data } = await axios.get(`https://graph.facebook.com/v14.0/${fbUserId}?fields=cover&access_token=${accessToken}`);
+            const { data } = await axios.get(`https://graph.facebook.com/v20.0/${fbUserId}?fields=cover&access_token=${accessToken}`);
             return data;
         } catch (err) {
             console.log('Error CoverImagePage :' + err);
