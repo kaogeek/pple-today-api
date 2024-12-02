@@ -1320,10 +1320,7 @@ export class PagePostController {
                     const hidePost = await this.hidePostService.find({ userId: objIdsUser });
                     if (hidePost.length > 0) {
                         for (let j = 0; j < hidePost.length; j++) {
-                            const postId = hidePost[j].postId;
-                            if (postId !== undefined && postId !== null && postId.length > 0) {
-                                postIds.push(...postId.map(id => new ObjectID(id)));
-                            }
+                            postIds.push(new ObjectID(hidePost[j].postId));
                         }
                     }
                 }
