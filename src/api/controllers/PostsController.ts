@@ -269,6 +269,7 @@ export class PostsController {
     @Post('/search')
     public async searchPost(@QueryParam('isHideStory') isHideStory: boolean, @QueryParam('isNeeds') isNeeds: boolean, @Body({ validate: true }) filter: SearchFilter, @Res() res: any, @Req() req: any): Promise<any> {
         const today = moment().toDate();
+        let hidePosts = undefined;
         if (filter.whereConditions !== undefined) {
             if (typeof filter.whereConditions === 'object') {
                 const postId = filter.whereConditions._id;
@@ -276,23 +277,19 @@ export class PostsController {
                     const postObjId = new ObjectID(postId);
                     filter.whereConditions._id = postObjId;
                 }
-                const postIds = postId;
                 const userId = req.headers.userid;
                 let objIds = undefined;
                 if (userId) {
                     objIds = new ObjectID(userId);
                 }
                 if (objIds !== undefined && objIds !== null) {
-                    const hidePost = await this.hidePostService.find({ userId: objIds, postId: postIds });
-                    if (hidePost.length > 0) {
-                        const errorResponse = ResponseUtil.getErrorResponse('This post Id have been hide.', undefined);
-                        return res.status(400).send(errorResponse);
-                    }
+                    hidePosts = await this.hidePostService.find({ userId: objIds });
                 }
             }
         } else {
             filter.whereConditions = {};
         }
+        // todo
         // overide to whereCondition to search only not delete post
         filter.whereConditions.hidden = false;
         filter.whereConditions.deleted = false;
@@ -304,15 +301,19 @@ export class PostsController {
         const likeAsPageMap: any = {};
         const postsCommentMap: any = {};
         let result = [];
-
+        const arrHidePost: ObjectID[] = [];
+        if (hidePosts.length > 0) {
+            for(const hidePost of hidePosts) {
+                arrHidePost.push(new ObjectID(hidePost.postId));
+            }
+        }
         if (postLists !== null && postLists !== undefined) {
             const postIdList = [];
             const referencePostList = [];
             const repostCountMap: any = {};
-
-            for (const post of postLists) {
-                const referencePost = post.referencePost;
-                postIdList.push(new ObjectID(post.id));
+            for (let i = 0;i<postLists.length;i++) {
+                const referencePost = postLists[i].referencePost;
+                postIdList.push(new ObjectID(postLists[i].id));
 
                 if (referencePost !== '' && referencePost !== null && referencePost !== undefined) {
                     referencePostList.push(new ObjectID(referencePost));
@@ -321,7 +322,7 @@ export class PostsController {
 
             if (postIdList !== null && postIdList !== undefined && postIdList.length > 0) {
                 result = await this.postsService.aggregate([
-                    { $match: { _id: { $in: postIdList }, hidden: false, deleted: false, isDraft: false, startDateTime: { $lte: today } } },
+                    { $match: { _id: { $nin: arrHidePost, $in: postIdList },  hidden: false, deleted: false, isDraft: false, startDateTime: { $lte: today } } },
                     {
                         $lookup: {
                             from: 'Page',

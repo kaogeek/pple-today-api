@@ -5,10 +5,17 @@ import { ResponseUtil } from '../../utils/ResponseUtil';
 import { CONTENT_TYPE } from '../../constants/ContentAction';
 import { UserReportContentService } from '../services/UserReportContentService';
 import { UserReportContent } from '../models/UserReportContent';
+import { HidePosts } from '../models/HidePostsModel';
 import { ObjectID } from 'mongodb';
 import { SearchFilter } from './requests/SearchFilterRequest';
 import { ObjectUtil } from '../../utils/ObjectUtil';
-import { DEFAULT_SEARCH_CONFIG_VALUE, LIMIT_USER_REPORT_CONTENT_CONFIG_NAME, DEFAULT_LIMIT_USER_REPORT_CONTENT_CONFIG_VALUE, SEARCH_CONFIG_NAME } from '../../constants/SystemConfig';
+import { 
+    DEFAULT_SEARCH_CONFIG_VALUE, 
+    LIMIT_USER_REPORT_CONTENT_CONFIG_NAME, 
+    DEFAULT_LIMIT_USER_REPORT_CONTENT_CONFIG_VALUE, 
+    SEARCH_CONFIG_NAME 
+} 
+    from '../../constants/SystemConfig';
 import { ConfigService } from '../services/ConfigService';
 import { HidePostService } from '../services/HidePostService';
 @JsonController('/user/report')
@@ -17,7 +24,7 @@ export class UserReportContentController {
     constructor(
         private userReportContentService: UserReportContentService,
         private configService: ConfigService,
-        private hidePostService: HidePostService
+        private hidePostService: HidePostService,
     ) { }
 
     @Post()
@@ -78,24 +85,22 @@ export class UserReportContentController {
     public async userHidePost(@Req() req: Request, @Res() res: Response): Promise<any> {
         const userId: string = req.user['id'];
         const userObjId: ObjectID = new ObjectID(userId);
-        let query = undefined;
-        let newValues = undefined;
         if (userObjId) {
-            const hidePostOne = await this.hidePostService.findOne({ userId: userObjId });
-            if (hidePostOne !== undefined && hidePostOne !== null) {
-                const oddArray = hidePostOne.postId;
-                const concat = oddArray.concat(req.body.postId);
-                query = { _id: hidePostOne.id, userId: userObjId };
-                newValues = { $set: { postId: concat } };
+            const hidePostOne = await this.hidePostService.findOne({ userId: userObjId, postId: new ObjectID(req.body.postId[0]) });
+            if (hidePostOne === undefined) {
+                const hidePostModel: HidePosts = new HidePosts();
+                hidePostModel.userId = userObjId;
+                hidePostModel.postId = new ObjectID(req.body.postId[0]);
+                const create = await this.hidePostService.create(hidePostModel);
+                if (create) {
+                    const successResponse = ResponseUtil.getSuccessResponse('Hide post is successful.', undefined);
+                    return res.status(200).send(successResponse);
+                }
             } else {
-                query = { userId: userObjId };
-                newValues = { $set: { postId: req.body.postId } };
-            }
-            const update = await this.hidePostService.update(query, newValues);
-            if (update) {
                 const successResponse = ResponseUtil.getSuccessResponse('Hide post is successful.', undefined);
                 return res.status(200).send(successResponse);
             }
+
         } else {
             return res.status(400).send(ResponseUtil.getErrorResponse('Cannot hide post because not found ObjId.', undefined));
 
