@@ -1,0 +1,12 @@
+steps:
+  - name: gcr.io/kaniko-project/executor
+    args:
+      - --context=.
+      - --dockerfile=Dockerfile
+      - --destination=asia-southeast1-docker.pkg.dev/pple-infra/pple/pple-today-api:$TAG_NAME
+      - --cache=true
+      - --cache-ttl=72h
+    env:
+      - TAG_NAME=$TAG_NAME
+options:
+  logging: CLOUD_LOGGING_ONLY
