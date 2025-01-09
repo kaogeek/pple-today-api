@@ -259,8 +259,9 @@ export class MainPageController {
         // convert object to string then json !!!!
         // {endDateTime:-1};
         let convert = undefined;
-
+        console.log('monthRange[1]::',monthRange[1]);
         const checkCreate = await this.kaokaiTodaySnapShotService.findOne({ endDateTime: monthRange[1] });
+        console.log('pass4::',checkCreate);
         if (checkCreate !== undefined && checkCreate !== null) {
             if (typeof (JSON.stringify(checkCreate)) === 'string') {
                 const stringObj = JSON.stringify(checkCreate);
@@ -268,6 +269,7 @@ export class MainPageController {
                 return convert;
             }
         }
+        console.log('pass5::');
         // ordering
         const emerProcessor: EmergencyEventSectionProcessor = new EmergencyEventSectionProcessor(this.emergencyEventService, this.postsService, this.s3Service, this.hashTagService);
         emerProcessor.setData({
@@ -410,6 +412,7 @@ export class MainPageController {
             kaokaiHashTag.contents.length === 0 &&
             kaokaiContent.contents.length === 0
         ) {
+            console.log('pass10');
             const emerProcessorUn: EmergencyEventSectionProcessor = new EmergencyEventSectionProcessor(this.emergencyEventService, this.postsService, this.s3Service, this.hashTagService);
             emerProcessorUn.setData({
                 assetEmergenDays,
@@ -480,6 +483,7 @@ export class MainPageController {
             const successResponseUn = ResponseUtil.getSuccessResponse('Successfully Main Page Data', resultUn);
             return res.status(200).send(successResponseUn);
         }
+        console.log('pass11');
         const result: any = {};
         result.emergencyEvents = emerSectionModel;
         result.hashTagSumma = hashTagSumma;
@@ -492,6 +496,7 @@ export class MainPageController {
         result.announcement = announcements;
         result.linkAnnounceMent = linkAnnouncements;
         content = await this.snapShotToday(result, monthRange[0], monthRange[1], jobscheduler);
+        console.log('content:::',content);
         // const noti = await this.pushNotification(result, monthRange[0], monthRange[1]);
         if (date !== undefined && date !== null) {
             if (content) {
@@ -3162,7 +3167,9 @@ export class MainPageController {
         const hourSplit = split[0];
         const minuteSpit = split[1];
         const checkCreate = await this.kaokaiTodaySnapShotService.findOne({ endDateTime: endDateTimeToday });
+        console.log('pass12::',checkCreate);
         if (checkCreate !== undefined && checkCreate !== null) {
+            console.log('pass13::');
             return checkCreate.data;
         }
 
@@ -3170,6 +3177,7 @@ export class MainPageController {
         const fireBaseToken = [];
         // String(switchSendEm) === 'true'
         if (scheduler === 'processor' && hours === parseInt(hourSplit, 10) && minutes === parseInt(minuteSpit, 10)) {
+            console.log('pass14::');
             const result: any = {};
             result.data = data;
             result.startDateTime = startDateRange;
