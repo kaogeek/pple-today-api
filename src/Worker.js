@@ -29,7 +29,7 @@ parentPort.on('message', async (jobs) => {
         if (String(jobs['filterNews']) === 'true') {
             for (let i = 0; i < jobs['snapshot'].pageRoundRobin.contents.length; i++) {
                 body = jobs['snapshot'].pageRoundRobin.contents[i].post.title ? String(jobs['snapshot'].pageRoundRobin.contents[i].post.title) : undefined;
-                image = jobs['snapshot'].pageRoundRobin.contents[i].coverPageSignUrl ? jobs['snapshot'].pageRoundRobin.contents[i].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = jobs['snapshot'].pageRoundRobin.contents[i].coverPageSignUrl ? jobs['snapshot'].pageRoundRobin.contents[i].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
                 if (body && image !== undefined) {
                     break;
                 } else {
@@ -38,11 +38,11 @@ parentPort.on('message', async (jobs) => {
             }
             if (body === undefined) {
                 body = jobs['snapshot'].majorTrend.contents[0].post.title ? String(jobs['snapshot'].majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-                image = jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl ? jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl ? jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
             }
         } else {
             body = jobs['snapshot'].majorTrend.contents[0].post.title ? String(jobs['snapshot'].majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-            image = jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl ? jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+            image = jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl ? jobs['snapshot'].majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         }
         if (body.length > 60) {
             body = body.substring(0, 60) + '...';

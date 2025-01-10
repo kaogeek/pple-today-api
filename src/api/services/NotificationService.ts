@@ -139,7 +139,7 @@ export class NotificationService {
         if (String(filterNews) === 'true') {
             for (let i = 0; i < data.pageRoundRobin.contents.length; i++) {
                 body = data.pageRoundRobin.contents[i].post.title ? String(data.pageRoundRobin.contents[i].post.title) : undefined;
-                image = data.pageRoundRobin.contents[i].coverPageSignUrl ? data.pageRoundRobin.contents[i].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = data.pageRoundRobin.contents[i].coverPageSignUrl ? data.pageRoundRobin.contents[i].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
                 if (body && image !== undefined) {
                     break;
                 } else {
@@ -148,11 +148,11 @@ export class NotificationService {
             }
             if (body === undefined) {
                 body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-                image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
             }
         } else {
             body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-            image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+            image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         }
         if (body.length > 60) {
             body = body.substring(0, 60) + '...';
@@ -192,7 +192,7 @@ export class NotificationService {
         if (String(filterNews) === 'true') {
             for (let i = 0; i < data.pageRoundRobin.contents.length; i++) {
                 body = data.pageRoundRobin.contents[i].post.title ? String(data.pageRoundRobin.contents[i].post.title) : undefined;
-                image = data.pageRoundRobin.contents[i].coverPageSignUrl ? data.pageRoundRobin.contents[i].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = data.pageRoundRobin.contents[i].coverPageSignUrl ? data.pageRoundRobin.contents[i].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
                 if (body && image !== undefined) {
                     break;
                 } else {
@@ -201,11 +201,11 @@ export class NotificationService {
             }
             if (body === undefined) {
                 body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-                image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+                image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
             }
         } else {
             body = data.majorTrend.contents[0].post.title ? String(data.majorTrend.contents[0].post.title) : 'ประชาชนหน้าหนึ่ง';
-            image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+            image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         }
         if (body.length > 60) {
             body = body.substring(0, 60) + '...';
@@ -299,7 +299,7 @@ export class NotificationService {
         if (body.length > 60) {
             body = body.substring(0, 60) + '...';
         }
-        const image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+        const image = data.majorTrend.contents[0].coverPageSignUrl ? data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         const thaiDate = String(date);
         const token = String(tokenId);
         const notificationType = 'TODAY_NEWS';

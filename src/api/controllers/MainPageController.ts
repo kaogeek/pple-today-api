@@ -3916,7 +3916,7 @@ export class MainPageController {
             message = `
             <div style="padding: 10px;background: white;width: 850px;">
                <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                    <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                    <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                        alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                </div>
                <div style="display: grid;margin: 30px 40px;
@@ -4105,7 +4105,7 @@ export class MainPageController {
             message = `
             <div style="padding: 10px;background: white;width: 850px;">
                <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                    <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                    <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                        alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                </div>
                <div style="display: grid;margin: 30px 40px;
@@ -4251,7 +4251,7 @@ export class MainPageController {
             message = `
                 <div style="padding: 10px;background: white;width: 850px;">
                     <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                            <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                            <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                             alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                     </div>
                     <div style="display: grid;margin: 30px 40px;
@@ -4360,7 +4360,7 @@ export class MainPageController {
             message = `
             <div style="padding: 10px;background: white;width: 850px;">
                <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                    <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                    <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                        alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                </div>
                <div style="display: grid;margin: 30px 40px;
@@ -4509,7 +4509,7 @@ export class MainPageController {
             message = `
                 <div style="padding: 10px;background: white;width: 850px;">
                    <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                        <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                            alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                    </div>
                    <div style="display: grid;margin: 30px 40px;
@@ -4688,7 +4688,7 @@ export class MainPageController {
             message = `
                 <div style="padding: 10px;background: white;width: 850px;">
                    <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                        <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                            alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                    </div>
                    <div style="display: grid;margin: 30px 40px;
@@ -4856,7 +4856,7 @@ export class MainPageController {
             message = `
                 <div style="padding: 10px;background: white;width: 850px;">
                    <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                        <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                            alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                    </div>
                    <div style="display: grid;margin: 30px 40px;
@@ -4979,7 +4979,7 @@ export class MainPageController {
             message = `
                 <div style="padding: 10px;background: white;width: 850px;">
                    <div style="width: 60px;height: 52px;padding: 10px;position: absolute;float: right;background: white;">
-                        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png'
+                        <img src='https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png'
                            alt='profile' style=" width: 100%;height: 100%;object-fit: cover;background: white;">
                    </div>
                    <div style="display: grid;margin: 30px 40px;
@@ -5138,10 +5138,10 @@ export class MainPageController {
     private async parseKaokaiTodayPictureRange(data: any): Promise<any> {
         let image = undefined;
         if (data.data.pageRoundRobin.contents.length > 0) {
-            image = data.data.pageRoundRobin.contents[0].coverPageSignUrl ? data.data.pageRoundRobin.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+            image = data.data.pageRoundRobin.contents[0].coverPageSignUrl ? data.data.pageRoundRobin.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         }
         if (image === undefined) {
-            image = data.data.majorTrend.contents[0].coverPageSignUrl ? data.data.majorTrend.contents[0].coverPageSignUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Move_Forward_Party_Logo.svg/180px-Move_Forward_Party_Logo.svg.png';
+            image = data.data.majorTrend.contents[0].coverPageSignUrl ? data.data.majorTrend.contents[0].coverPageSignUrl : 'https://mfp-today-web.s3.ap-southeast-1.amazonaws.com/unnamed.png';
         }
         return image;
     }
