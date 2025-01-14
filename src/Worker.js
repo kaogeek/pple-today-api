@@ -94,7 +94,7 @@ parentPort.on('message', async (jobs) => {
                     }
                 };
                 if(jobs['token'] !== undefined && jobs['token'].length > 0) {
-                    await firebase.messaging().sendMulticast(payload).then((res) => {
+                    await firebase.messaging().sendEachForMulticast(payload).then((res) => {
                         if(res) {
                             console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
                             count += 1;
@@ -153,7 +153,7 @@ parentPort.on('message', async (jobs) => {
                     }
                 };
                 if(jobs['token'] !== undefined && jobs['token'].length > 0) {
-                    await firebase.messaging().sendMulticast(payload).then((res) => {
+                    await firebase.messaging().sendEachForMulticast(payload).then((res) => {
                         if(res) {
                             console.log('successCount:',res.successCount, 'failureCount',res.failureCount);
                             count += 1;

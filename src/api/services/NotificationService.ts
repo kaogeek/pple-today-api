@@ -92,13 +92,14 @@ export class NotificationService {
         const image = 'https://scontent.fbkk2-3.fna.fbcdn.net/v/t39.30808-6/355437853_834984011524286_2620245563691529882_n.jpg?_nc_cat=111&cb=99be929b-59f725be&ccb=1-7&_nc_sid=730e14&_nc_eui2=AeHulsSGw1aykmm2mWaVr7ui84g9AOew56vziD0A57Dnq_ebcZYEz2lyh_ZTBRdkA_Uhh-I0e2lyIMNgTYvbZ6a8&_nc_ohc=zOqkiqXob2wAX_HQUSs&_nc_ht=scontent.fbkk2-3.fna&oh=00_AfBTww5j0wwsoi2AMVVlLnrJ1SG3x1A-JlI97O2YaqKS_g&oe=649AD4E3';
         const payload =
         {
-            notification: {
+            data: {
                 title,
                 image,
-            }
+            },
+            token:registrationTokens
         };
         if (String(registrationTokens) !== undefined) {
-            Promise.all([await admin.messaging().sendToDevice(registrationTokens, payload)]);
+            Promise.all([await admin.messaging().send(payload)]);
         } else {
             return;
         }
@@ -126,7 +127,7 @@ export class NotificationService {
         };
 
         if (String(token) !== undefined) {
-            Promise.all([await admin.messaging().sendMulticast(payload)]);
+            Promise.all([await admin.messaging().sendEachForMulticast(payload)]);
         } else {
             return;
         }
@@ -179,7 +180,7 @@ export class NotificationService {
         };
 
         if (String(token) !== undefined) {
-            Promise.all([await admin.messaging().sendMulticast(payload)]);
+            Promise.all([await admin.messaging().sendEachForMulticast(payload)]);
         } else {
             return;
         }
@@ -234,7 +235,7 @@ export class NotificationService {
         };
 
         if (String(token) !== undefined) {
-            // Promise.all([await admin.messaging().sendMulticast(payload)]);
+            // Promise.all([await admin.messaging().sendEachForMulticast(payload)]);
         } else {
             return;
         }
@@ -262,7 +263,7 @@ export class NotificationService {
             }
         };
         if (String(token) !== undefined) {
-            Promise.all([await admin.messaging().sendMulticast(payload)]);
+            Promise.all([await admin.messaging().sendEachForMulticast(payload)]);
         } else {
             return;
         }
