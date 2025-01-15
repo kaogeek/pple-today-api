@@ -7,7 +7,8 @@ COPY . .
 RUN npm run build
 EXPOSE 9000
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
+ENV TZ=Asia/Bangkok
 
 CMD [ "node", "./dist/app.js" ]
 
