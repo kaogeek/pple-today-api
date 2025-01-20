@@ -48,8 +48,8 @@ export const jobSchedulerLoader: MicroframeworkLoader = (settings: Microframewor
         const options = {
             headers: {
                 'Content-Type': 'application/json',
-                'Origin': 'http://localhost:4300',
-                'Referer': 'http://localhost:4300',
+                'Origin': process.env.WEB_ADMIN,
+                'Referer': process.env.WEB_ADMIN,
                 'mode': 'EMAIL'
             },
         };
@@ -59,8 +59,8 @@ export const jobSchedulerLoader: MicroframeworkLoader = (settings: Microframewor
                 headers:{
                     'Authorization': 'Bearer'+' '+res.data.data.token,
                     'Content-Type': 'application/json',
-                    'Origin': 'http://localhost:4300',
-                    'Referer': 'http://localhost:4300',
+                    'Origin': process.env.WEB_ADMIN,
+                    'Referer': process.env.WEB_ADMIN,
                 }
             };
             axios.post(process.env.APP_AUTO_APPROVE,{},underOption)
@@ -86,8 +86,8 @@ export const jobSchedulerLoader: MicroframeworkLoader = (settings: Microframewor
         const options = {
             headers: {
                 'Content-Type': 'application/json',
-                'Origin': 'http://localhost:4300',
-                'Referer': 'http://localhost:4300',
+                'Origin': process.env.WEB_ADMIN,
+                'Referer': process.env.WEB_ADMIN,
                 'mode': 'EMAIL'
             },
         };
@@ -97,8 +97,8 @@ export const jobSchedulerLoader: MicroframeworkLoader = (settings: Microframewor
                 headers:{
                     'Authorization': 'Bearer'+' '+res.data.data.token,
                     'Content-Type': 'application/json',
-                    'Origin': 'http://localhost:4300',
-                    'Referer': 'http://localhost:4300',
+                    'Origin': process.env.WEB_ADMIN,
+                    'Referer': process.env.WEB_ADMIN,
                 }
             };
             axios.post(process.env.APP_AUTO_CLOSED,{},underOption)

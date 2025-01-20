@@ -161,11 +161,8 @@ export class MainPageController {
     public async getContentListV2(@QueryParam('offset') offset: number, @QueryParam('section') section: string, @QueryParam('date') date: any, @Res() res: any, @Req() req: any): Promise<any> {
         const jobscheduler = req.headers.jobscheduler;
         const dateFormat = new Date(date);
-        console.log('dateFormat::', dateFormat);
         const dateReal = dateFormat.setDate(dateFormat.getDate() + 1);
-        console.log('dateReal::', dateReal)
         const toDate = new Date(dateReal);
-        console.log('toDate::', toDate);
         let content = undefined;
         const userId = req.headers.userid;
         const mainPageSearchConfig = await this.pageService.searchPageOfficialConfig();
@@ -206,9 +203,7 @@ export class MainPageController {
         }
         const emergencyCheckEndDate = assetTodayRangeDate.endDateTime;
         const monthRange: Date[] = DateTimeUtil.generatePreviousDaysPeriods(new Date(), assetTodayDate);
-        console.log('monthRange::',monthRange);
         if (toDate) {
-            console.log('pass toDate::',toDate);
             const checkSnapshot = await this.kaokaiTodaySnapShotService.findOne({ endDateTime: toDate });
             if (checkSnapshot !== undefined && checkSnapshot !== null) {
                 if(userId !== undefined && userId !== null && userId !== ''){
@@ -816,7 +811,6 @@ export class MainPageController {
             ]
         );
 
-        // console.log('kaikaoSnapShot',kaikaoSnapShot);
         const result: any = {
             'today': atMoment.shift(),
             'todayPost7Days': [],

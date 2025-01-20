@@ -1032,7 +1032,7 @@ export class FulfillmentController {
             const customItemIdList: ObjectID[] = [];
             const stdItemMap: any = {};
             const customItemMap: any = {};
-            let fulfillCaseCreate: FulfillmentCase = null || undefined;
+            let fulfillCaseCreate: FulfillmentCase;
             let postsObjId: ObjectID = null;
             let pageObjId: ObjectID = null;
             let requesterObjId: ObjectID = null;
